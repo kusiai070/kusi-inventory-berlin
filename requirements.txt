@@ -1,0 +1,41 @@
+# Enterprise Restaurant Inventory System
+# Sistema Enterprise de Inventarios para Restaurantes
+
+# Backend Dependencies
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+sqlalchemy==2.0.23
+pydantic==2.5.0
+pydantic[email]
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+pytesseract==0.3.10
+pdf2image==1.16.3
+Pillow==10.1.0
+openpyxl==3.1.2
+reportlab==4.0.7
+python-dateutil==2.8.2
+python-dotenv==1.0.0
+slowapi==0.1.9
+Werkzeug==3.0.1
+
+# Database Drivers
+# sqlite3 is built-in with Python
+psycopg2-binary==2.9.9  # For PostgreSQL in production
+
+# OCR Dependencies
+# Tesseract OCR must be installed separately:
+# Ubuntu/Debian: sudo apt-get install tesseract-ocr tesseract-ocr-spa
+# Windows: Download from https://github.com/UB-Mannheim/tesseract/wiki
+# macOS: brew install tesseract
+
+# Development Dependencies
+pytest==7.4.3
+pytest-asyncio==0.21.1
+black==23.11.0
+flake8==6.1.0
+mypy==1.7.1
+
+# Production Dependencies
+gunicorn==21.2.0

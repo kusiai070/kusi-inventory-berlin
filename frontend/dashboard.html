@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Enterprise Inventory</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.9.1/chart.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .sidebar {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+        .sidebar.collapsed {
+            width: 80px;
+        }
+        .nav-item {
+            transition: all 0.3s ease;
+        }
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-left: 4px solid #3498db;
+        }
+        .stats-card {
+            transition: all 0.3s ease;
+        }
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .alert-item {
+            animation: slideIn 0.5s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .loading {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="flex">
+        <!-- Sidebar -->
+        <div id="sidebar" class="sidebar w-64 fixed left-0 top-0 z-40">
+            <div class="p-6 border-b border-gray-600">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center mr-3">
+                            <i class="fas fa-warehouse text-white"></i>
+                        </div>
+                        <div id="logoText" class="text-white font-semibold">
+                            Enterprise Inventory
+                        </div>
+                    </div>
+                    <button id="toggleSidebar" class="text-white lg:hidden">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <nav class="mt-6">
+                <div class="px-4">
+                    <div class="nav-item active flex items-center px-4 py-3 text-white rounded-lg mb-2 cursor-pointer" onclick="navigateTo('dashboard')">
+                        <i class="fas fa-chart-pie w-6"></i>
+                        <span class="ml-3">Dashboard</span>
+                    </div>
+                    
+                    <div class="nav-item flex items-center px-4 py-3 text-gray-300 rounded-lg mb-2 cursor-pointer" onclick="navigateTo('inventory')">
+                        <i class="fas fa-boxes w-6"></i>
+                        <span class="ml-3">Inventario</span>
+                    </div>
+                    
+                    <div class="nav-item flex items-center px-4 py-3 text-gray-300 rounded-lg mb-2 cursor-pointer" onclick="navigateTo('ocr')">
+                        <i class="fas fa-camera w-6"></i>
+                        <span class="ml-3">Facturas OCR</span>
+                    </div>
+                    
+                    <div class="nav-item flex items-center px-4 py-3 text-gray-300 rounded-lg mb-2 cursor-pointer" onclick="navigateTo('count')">
+                        <i class="fas fa-clipboard-check w-6"></i>
+                        <span class="ml-3">Conteo Físico</span>
+                    </div>
+                    
+                    <div class="nav-item flex items-center px-4 py-3 text-gray-300 rounded-lg mb-2 cursor-pointer" onclick="navigateTo('reports')">
+                        <i class="fas fa-chart-bar w-6"></i>
+                        <span class="ml-3">Reportes</span>
+                    </div>
+                    
+                    <div class="nav-item flex items-center px-4 py-3 text-gray-300 rounded-lg mb-2 cursor-pointer" onclick="navigateTo('waste')">
+                        <i class="fas fa-trash-alt w-6"></i>
+                        <span class="ml-3">Mermas</span>
+                    </div>
+                </div>
+            </nav>
+            
+            <!-- User Info -->
+            <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-600">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-gray-500 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-white"></i>
+                    </div>
+                    <div class="ml-3 flex-1 min-w-0">
+                        <div id="userName" class="text-white text-sm font-medium truncate">Usuario</div>
+                        <div id="userRole" class="text-gray-400 text-xs">Rol</div>
+                    </div>
+                    <button id="logoutBtn" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 ml-64">
+            <!-- Header -->
+            <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
+                <div class="px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-800">Dashboard Ejecutivo</h1>
+                            <p class="text-gray-600">Panel de control del sistema de inventarios</p>
+                        </div>
+                        
+                        <div class="flex items-center space-x-4">
+                            <!-- Restaurant Selector -->
+                            <select id="restaurantSelector" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">Restaurante El Sol</option>
+                            </select>
+                            
+                            <!-- Language Selector -->
+                            <select id="languageSelector" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="es">ES</option>
+                                <option value="en">EN</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content Area -->
+            <main class="p-6">
+                <!-- Loading State -->
+                <div id="loadingState" class="loading flex items-center justify-center h-64">
+                    <div class="text-center">
+                        <i class="fas fa-spinner fa-spin text-4xl text-blue-500 mb-4"></i>
+                        <p class="text-gray-600">Cargando datos...</p>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div id="statsCards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" style="display: none;">
+                    <!-- Cards will be populated by JavaScript -->
+                </div>
+
+                <!-- Charts Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <!-- Weekly Consumption Chart -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">
+                                <i class="fas fa-chart-line text-blue-500 mr-2"></i>
+                                Consumo Semanal
+                            </h3>
+                            <button class="text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                        </div>
+                        <canvas id="weeklyConsumptionChart" width="400" height="200"></canvas>
+                    </div>
+
+                    <!-- Category Distribution Chart -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">
+                                <i class="fas fa-chart-pie text-green-500 mr-2"></i>
+                                Distribución por Categoría
+                            </h3>
+                            <button class="text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                        </div>
+                        <canvas id="categoryChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+
+                <!-- Alerts and Quick Actions -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <!-- Alerts -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">
+                                <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>
+                                Alertas Urgentes
+                            </h3>
+                            <span id="alertCount" class="bg-red-100 text-red-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">0</span>
+                        </div>
+                        <div id="alertsList" class="space-y-3">
+                            <!-- Alerts will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">
+                                <i class="fas fa-bolt text-yellow-500 mr-2"></i>
+                                Acciones Rápidas
+                            </h3>
+                        </div>
+                        <div id="quickActions" class="space-y-3">
+                            <!-- Quick actions will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Products Table -->
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">
+                            <i class="fas fa-star text-yellow-500 mr-2"></i>
+                            Productos con Mayor Rotación
+                        </h3>
+                        <button onclick="navigateTo('inventory')" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                            Ver todos <i class="fas fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-gray-200">
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Producto</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Categoría</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Stock Actual</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="topProductsTable">
+                                <!-- Table rows will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/utils.js"></script>
+    <script>
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check authentication
+            if (!checkAuth()) {
+                window.location.href = '/';
+                return;
+            }
+            
+            // Load dashboard data
+            loadDashboardData();
+            
+            // Setup event listeners
+            setupEventListeners();
+        });
+
+        function checkAuth() {
+            const token = localStorage.getItem('access_token');
+            return token !== null;
+        }
+
+        function setupEventListeners() {
+            // Logout button
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                logout();
+            });
+
+            // Sidebar toggle
+            document.getElementById('toggleSidebar').addEventListener('click', function() {
+                toggleSidebar();
+            });
+
+            // Restaurant selector
+            document.getElementById('restaurantSelector').addEventListener('change', function() {
+                // Handle restaurant change
+                loadDashboardData();
+            });
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
+        }
+
+        function navigateTo(page) {
+            const pages = {
+                'dashboard': 'dashboard.html',
+                'inventory': 'inventory.html',
+                'ocr': 'ocr.html',
+                'count': 'count.html',
+                'reports': 'reports.html',
+                'waste': 'waste.html'
+            };
+            
+            if (pages[page]) {
+                window.location.href = pages[page];
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('user');
+            window.location.href = '/';
+        }
+    </script>
+</body>
+</html>

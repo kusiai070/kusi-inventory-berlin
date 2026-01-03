@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facturas OCR - Enterprise Inventory</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.1/tesseract.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .sidebar {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            min-height: 100vh;
+        }
+        .nav-item {
+            transition: all 0.3s ease;
+        }
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-left: 4px solid #3498db;
+        }
+        .drop-zone {
+            border: 2px dashed #cbd5e1;
+            transition: all 0.3s ease;
+        }
+        .drop-zone.dragover {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        .ocr-result {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .invoice-item {
+            transition: all 0.3s ease;
+        }
+        .invoice-item:hover {
+            background-color: #f8fafc;
+        }
+        .processing {
+            display: none;
+        }
+        .confidence-high {
+            color: #10b981;
+        }
+        .confidence-medium {
+            color: #f59e0b;
+        }
+        .confidence-low {
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="flex">
+        <!-- Sidebar -->
+        <div class="sidebar w-64 fixed left-0 top-0 z-40">
+            <div class="p-6 border-b border-gray-600">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-warehouse text-white"></i>
+                    </div>
+                    <div class="text-white font-semibold">
+                        Enterprise Inventory
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="mt-6">
+                <div class="px-4">
+                    <div class="nav-item flex items-center px-4 py-3 text-gray-300 rounded-lg mb-2 cursor-pointer" onclick="navigateTo('dashboard')">
+                        <i class="fas fa-chart-pie w-6"></i>
+                        <span class="ml-3">Dashboard</span>
+                    </div>
+                    
+                    <div class="nav-item flex items-center px-4 py-3 text-gray-300 rounded-lg mb-2 cursor-pointer" onclick="navigateTo('inventory')">
+                        <i class="fas fa-boxes w-6"></i>
+                        <span class="ml-3">Inventario</span>
+                    </div>
+                    
+                    <div class="nav-item active flex items-center px-4 py-3 text-white rounded-lg mb-2 cursor-pointer" onclick="navigateTo('ocr')">
+                        <i class="fas fa-camera w-6"></i>
+                        <span class="ml-3">Facturas OCR</span>
+                    </div>
+                    
+                    <div class="nav-item flex items-center px-4 py-3 text-gray-300 rounded-lg mb-2 cursor-pointer" onclick="navigateTo('count')">
+                        <i class="fas fa-clipboard-check w-6"></i>
+                        <span class="ml-3">Conteo Físico</span>
+                    </div>
+                    
+                    <div class="nav-item flex items-center px-4 py-3 text-gray-300 rounded-lg mb-2 cursor-pointer" onclick="navigateTo('reports')">
+                        <i class="fas fa-chart-bar w-6"></i>
+                        <span class="ml-3">Reportes</span>
+                    </div>
+                    
+                    <div class="nav-item flex items-center px-4 py-3 text-gray-300 rounded-lg mb-2 cursor-pointer" onclick="navigateTo('waste')">
+                        <i class="fas fa-trash-alt w-6"></i>
+                        <span class="ml-3">Mermas</span>
+                    </div>
+                </div>
+            </nav>
+            
+            <!-- User Info -->
+            <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-600">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-gray-500 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-white"></i>
+                    </div>
+                    <div class="ml-3 flex-1 min-w-0">
+                        <div id="userName" class="text-white text-sm font-medium truncate">Usuario</div>
+                        <div id="userRole" class="text-gray-400 text-xs">Rol</div>
+                    </div>
+                    <button id="logoutBtn" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 ml-64">
+            <!-- Header -->
+            <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
+                <div class="px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-800">Procesamiento OCR de Facturas</h1>
+                            <p class="text-gray-600">Extrae información automáticamente de tus facturas</p>
+                        </div>
+                        
+                        <div class="flex items-center space-x-4">
+                            <button id="historyBtn" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
+                                <i class="fas fa-history mr-2"></i>Historial
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content Area -->
+            <main class="p-6">
+                <!-- Upload Section -->
+                <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                        <i class="fas fa-cloud-upload-alt text-blue-500 mr-2"></i>
+                        Subir Factura
+                    </h3>
+                    
+                    <div id="dropZone" class="drop-zone rounded-lg p-12 text-center cursor-pointer">
+                        <div id="uploadContent">
+                            <i class="fas fa-file-upload text-4xl text-gray-400 mb-4"></i>
+                            <p class="text-lg font-medium text-gray-700 mb-2">
+                                Arrastra tu factura aquí o haz clic para seleccionar
+                            </p>
+                            <p class="text-sm text-gray-500">
+                                Soporta imágenes (JPG, PNG) y PDF
+                            </p>
+                        </div>
+                        
+                        <div id="processingContent" class="processing">
+                            <i class="fas fa-spinner fa-spin text-4xl text-blue-500 mb-4"></i>
+                            <p class="text-lg font-medium text-gray-700 mb-2">
+                                Procesando factura...
+                            </p>
+                            <p class="text-sm text-gray-500">
+                                Esto puede tomar unos segundos
+                            </p>
+                            <div class="mt-4">
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div id="progressBar" class="bg-blue-600 h-2 rounded-full" style="width: 0%"></div>
+                                </div>
+                                <p id="progressText" class="text-sm text-gray-500 mt-2">0%</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <input type="file" id="fileInput" accept="image/*,.pdf" class="hidden">
+                </div>
+
+                <!-- OCR Results -->
+                <div id="ocrResults" class="bg-white rounded-xl shadow-sm p-6 mb-6" style="display: none;">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">
+                            <i class="fas fa-file-alt text-green-500 mr-2"></i>
+                            Resultados del OCR
+                        </h3>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-sm text-gray-600">Confianza:</span>
+                            <span id="confidenceBadge" class="px-2 py-1 text-xs font-semibold rounded-full">-</span>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Invoice Info -->
+                        <div>
+                            <h4 class="font-medium text-gray-700 mb-3">Información de la Factura</h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-sm text-gray-600">Número de Factura</label>
+                                    <input type="text" id="invoiceNumber" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600">Fecha</label>
+                                    <input type="date" id="invoiceDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600">Proveedor</label>
+                                    <input type="text" id="invoiceProvider" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-sm text-gray-600">Subtotal</label>
+                                        <input type="number" id="invoiceSubtotal" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm text-gray-600">Total</label>
+                                        <input type="number" id="invoiceTotal" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Extracted Items -->
+                        <div>
+                            <h4 class="font-medium text-gray-700 mb-3">Productos Detectados</h4>
+                            <div id="extractedItems" class="space-y-3 max-h-80 overflow-y-auto">
+                                <!-- Items will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="flex items-center justify-end space-x-4 mt-6 pt-6 border-t border-gray-200">
+                        <button id="discardBtn" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                            Descartar
+                        </button>
+                        <button id="saveInvoiceBtn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            <i class="fas fa-save mr-2"></i>Guardar y Actualizar Inventario
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recent Invoices -->
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-lg font-semibold text-gray-800">
+                            <i class="fas fa-history text-purple-500 mr-2"></i>
+                            Facturas Recientes
+                        </h3>
+                        <div class="flex items-center space-x-4">
+                            <input type="text" id="searchInvoices" placeholder="Buscar factura..." class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <select id="filterStatus" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">Todos</option>
+                                <option value="pending">Pendiente</option>
+                                <option value="processed">Procesada</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-gray-200">
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Número</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Fecha</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Proveedor</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Total</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Items</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Estado</th>
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invoicesTable">
+                                <tr>
+                                    <td colspan="7" class="text-center py-8 text-gray-500">
+                                        <i class="fas fa-file-invoice text-4xl mb-4"></i>
+                                        <p>No hay facturas procesadas aún</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Item Matching Modal -->
+    <div id="matchingModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display: none;">
+        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-semibold text-gray-800">Vincular Productos</h3>
+                    <button id="closeMatchingModal" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <p class="text-gray-600 mb-4">
+                    Selecciona el producto correcto para cada item detectado en la factura:
+                </p>
+                <div id="matchingItems" class="space-y-4">
+                    <!-- Matching items will be populated here -->
+                </div>
+                <div class="flex items-center justify-end space-x-4 mt-6 pt-6 border-t border-gray-200">
+                    <button id="cancelMatching" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                        Cancelar
+                    </button>
+                    <button id="confirmMatching" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        Confirmar Vinculación
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/ocr.js"></script>
+    <script src="js/utils.js"></script>
+    <script>
+        // Initialize OCR page
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!authManager.isAuthenticated()) {
+                window.location.href = '/';
+                return;
+            }
+
+            // Load user info
+            const user = authManager.getUser();
+            if (user) {
+                document.getElementById('userName').textContent = user.full_name;
+                document.getElementById('userRole').textContent = user.role;
+            }
+
+            // Initialize OCR manager
+            window.ocrManager = new OCRManager();
+            ocrManager.init();
+        });
+
+        function navigateTo(page) {
+            const pages = {
+                'dashboard': 'dashboard.html',
+                'inventory': 'inventory.html',
+                'ocr': 'ocr.html',
+                'count': 'count.html',
+                'reports': 'reports.html',
+                'waste': 'waste.html'
+            };
+            
+            if (pages[page]) {
+                window.location.href = pages[page];
+            }
+        }
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            authManager.logout();
+            window.location.href = '/';
+        });
+    </script>
+</body>
+</html>

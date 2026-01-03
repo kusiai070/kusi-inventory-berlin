@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conteo Físico - Enterprise Inventory</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .sidebar {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            min-height: 100vh;
+        }
+
+        .nav-item {
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-left: 4px solid #3498db;
+        }
+
+        .count-item {
+            transition: all 0.3s ease;
+        }
+
+        .count-item:hover {
+            background-color: #f8fafc;
+        }
+
+        .difference-positive {
+            color: #10b981;
+        }
+
+        .difference-negative {
+            color: #ef4444;
+        }
+
+        .count-active {
+            border: 2px solid #3b82f6;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="flex flex-col md:flex-row min-h-screen">
+        <!-- Mobile Header -->
+        <div class="md:hidden bg-gray-900 text-white p-4 flex justify-between items-center sticky top-0 z-50">
+            <div class="flex items-center">
+                <i class="fas fa-warehouse mr-2"></i>
+                <span class="font-bold">Enterprise Inventory</span>
+            </div>
+            <button id="mobileMenuBtn" class="text-white focus:outline-none">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Sidebar -->
+        <div id="sidebar"
+            class="sidebar w-64 fixed md:sticky top-0 h-screen z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out overflow-y-auto">
+            <div class="p-6 border-b border-gray-600 hidden md:block">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-warehouse text-white"></i>
+                    </div>
+                    <div class="text-white font-semibold">Enterprise Inventory</div>
+                </div>
+            </div>
+
+            <nav class="mt-6">
+                <!-- Close button for mobile -->
+                <div class="md:hidden p-4 flex justify-end">
+                    <button id="closeSidebarBtn" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div class="px-4">
+                    <div class="nav-item flex items-center px-4 py-3 text-gray-300 rounded-lg mb-2 cursor-pointer"
+                        onclick="navigateTo('dashboard')">
+                        <i class="fas fa-chart-pie w-6"></i><span class="ml-3">Dashboard</span>
+                    </div>
+                    <div class="nav-item flex items-center px-4 py-3 text-gray-300 rounded-lg mb-2 cursor-pointer"
+                        onclick="navigateTo('inventory')">
+                        <i class="fas fa-boxes w-6"></i><span class="ml-3">Inventario</span>
+                    </div>
+                    <div class="nav-item flex items-center px-4 py-3 text-gray-300 rounded-lg mb-2 cursor-pointer"
+                        onclick="navigateTo('ocr')">
+                        <i class="fas fa-camera w-6"></i><span class="ml-3">Facturas OCR</span>
+                    </div>
+                    <div class="nav-item active flex items-center px-4 py-3 text-white rounded-lg mb-2 cursor-pointer"
+                        onclick="navigateTo('count')">
+                        <i class="fas fa-clipboard-check w-6"></i><span class="ml-3">Conteo Físico</span>
+                    </div>
+                    <div class="nav-item flex items-center px-4 py-3 text-gray-300 rounded-lg mb-2 cursor-pointer"
+                        onclick="navigateTo('reports')">
+                        <i class="fas fa-chart-bar w-6"></i><span class="ml-3">Reportes</span>
+                    </div>
+                    <div class="nav-item flex items-center px-4 py-3 text-gray-300 rounded-lg mb-2 cursor-pointer"
+                        onclick="navigateTo('waste')">
+                        <i class="fas fa-trash-alt w-6"></i><span class="ml-3">Mermas</span>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- User Info -->
+            <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-600">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-gray-500 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-white"></i>
+                    </div>
+                    <div class="ml-3 flex-1 min-w-0">
+                        <div id="userName" class="text-white text-sm font-medium truncate">Usuario</div>
+                        <div id="userRole" class="text-gray-400 text-xs">Rol</div>
+                    </div>
+                    <button id="logoutBtn" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overlay -->
+        <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden md:hidden"></div>
+
+        <!-- Main Content -->
+        <!-- Removed ml-64 and fixed header width issues -->
+        <div class="flex-1 w-full md:w-auto">
+            <!-- Header -->
+            <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-20">
+                <div class="px-4 py-4 md:px-6">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <h1 class="text-xl md:text-2xl font-bold text-gray-800">Conteo Físico</h1>
+                            <p class="text-sm text-gray-600 hidden md:block">Realiza conteos físicos y compara con el
+                                sistema</p>
+                        </div>
+
+                        <div class="flex items-center space-x-4">
+                            <button id="historyBtn"
+                                class="w-full md:w-auto px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-sm">
+                                <i class="fas fa-history mr-2"></i>Historial
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content Area -->
+            <main class="p-4 md:p-6 pb-24"> <!-- Added pb-24 for mobile scrolling -->
+                <!-- Start Count Section -->
+                <div id="startSection" class="bg-white rounded-xl shadow-sm p-4 md:p-6 mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-play-circle text-blue-500 mr-2"></i>
+                        Iniciar Nuevo
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Conteo</label>
+                            <select id="countType"
+                                class="w-full px-3 py-3 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-base">
+                                <option value="daily">Diario (Perecederos)</option>
+                                <option value="weekly">Semanal (Completo)</option>
+                                <option value="category">Por Categoría</option>
+                            </select>
+                        </div>
+
+                        <div id="categorySelect" style="display: none;">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Categoría</label>
+                            <select id="categoryId"
+                                class="w-full px-3 py-3 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-base">
+                                <option value="">Seleccionar categoría</option>
+                            </select>
+                        </div>
+
+                        <div class="flex items-end">
+                            <button id="startCountBtn"
+                                class="w-full px-6 py-3 md:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-lg md:text-base">
+                                <i class="fas fa-play mr-2"></i>Iniciar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Count Section -->
+                <div id="activeCountSection" class="bg-white rounded-xl shadow-sm p-4 md:p-6 mb-6"
+                    style="display: none;">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                                <i class="fas fa-clipboard-check text-green-500 mr-2"></i>
+                                En Progreso
+                            </h3>
+                            <span id="countStatus"
+                                class="md:hidden px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                                Activo
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-2 md:flex items-center gap-2 md:space-x-4">
+                            <span id="countStatusDesktop"
+                                class="hidden md:inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                                En Progreso
+                            </span>
+                            <button id="savePartialBtn"
+                                class="px-2 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 text-sm text-center">
+                                <i class="fas fa-save mr-1"></i>Guardar
+                            </button>
+                            <button id="finalizeBtn"
+                                class="px-2 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm text-center">
+                                <i class="fas fa-check mr-1"></i>Finalizar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mb-4 bg-blue-50 p-3 rounded-lg">
+                        <p class="text-sm text-blue-800 flex justify-between">
+                            <span><i class="fas fa-tag mr-1"></i> <span id="currentCountType"
+                                    class="font-medium">Type</span></span>
+                            <span><i class="fas fa-clock mr-1"></i> <span id="countStartTime"
+                                    class="font-medium">Time</span></span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Count Items -->
+                <div id="countItemsSection" class="bg-white rounded-xl shadow-sm p-4 md:p-6 mb-6"
+                    style="display: none;">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-2">
+                        <h3 class="text-lg font-semibold text-gray-800">
+                            <i class="fas fa-list text-purple-500 mr-2"></i>
+                            Lista
+                        </h3>
+                        <div class="flex items-center space-x-4 w-full md:w-auto">
+                            <span class="text-sm text-gray-600 whitespace-nowrap">Progreso: <span
+                                    id="progressCounter">0/0</span></span>
+                            <div class="flex-1 md:w-32 bg-gray-200 rounded-full h-2">
+                                <div id="progressBar" class="bg-blue-600 h-2 rounded-full" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto -mx-4 md:mx-0">
+                        <table class="w-full text-sm md:text-base">
+                            <thead class="bg-gray-50 md:bg-transparent">
+                                <tr class="border-b border-gray-200">
+                                    <th class="text-left py-3 px-4 font-medium text-gray-700">Producto</th>
+                                    <th class="text-center py-3 px-2 font-medium text-gray-700 w-24">Conteo</th>
+                                    <th class="text-center py-3 px-2 font-medium text-gray-700 hidden md:table-cell">
+                                        Sistema</th>
+                                    <th class="text-center py-3 px-2 font-medium text-gray-700 md:hidden">Dif</th>
+                                    <th class="text-center py-3 px-2 font-medium text-gray-700 hidden md:table-cell">
+                                        Diferencia</th>
+                                </tr>
+                            </thead>
+                            <tbody id="countItemsTable">
+                                <!-- Mobile-optimized rows will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Summary -->
+                <div id="summarySection" class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6"
+                    style="display: none;">
+                    <div class="bg-white rounded-xl shadow-sm p-4 flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Total</p>
+                            <p id="totalItems" class="text-2xl font-bold text-gray-900">0</p>
+                        </div>
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-calculator text-blue-600"></i>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm p-4 flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Contados</p>
+                            <p id="countedItems" class="text-2xl font-bold text-gray-900">0</p>
+                        </div>
+                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-check text-green-600"></i>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm p-4 flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Diferencias</p>
+                            <p id="differences" class="text-2xl font-bold text-gray-900">0</p>
+                        </div>
+                        <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-exclamation-triangle text-red-600"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Export Options -->
+                <div id="exportSection" class="bg-white rounded-xl shadow-sm p-4 md:p-6" style="display: none;">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                        <i class="fas fa-download text-blue-500 mr-2"></i>
+                        Exportar
+                    </h3>
+
+                    <div class="flex flex-col md:flex-row items-center gap-3">
+                        <button id="exportExcel"
+                            class="w-full md:w-auto px-4 py-3 md:py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex justify-center items-center">
+                            <i class="fas fa-file-excel mr-2"></i>Excel
+                        </button>
+                        <button id="exportPDF"
+                            class="w-full md:w-auto px-4 py-3 md:py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex justify-center items-center">
+                            <i class="fas fa-file-pdf mr-2"></i>PDF
+                        </button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/count.js"></script>
+    <script src="js/utils.js"></script>
+    <script>
+        // Initialize count page
+        document.addEventListener('DOMContentLoaded', function () {
+            if (!authManager.isAuthenticated()) {
+                window.location.href = '/';
+                return;
+            }
+
+            // Load user info
+            const user = authManager.getUser();
+            if (user) {
+                document.getElementById('userName').textContent = user.full_name;
+                document.getElementById('userRole').textContent = user.role;
+            }
+
+            // Mobile sidebar logic
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const sidebar = document.getElementById('sidebar');
+            const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+            function toggleSidebar() {
+                sidebar.classList.toggle('-translate-x-full');
+                sidebarOverlay.classList.toggle('hidden');
+            }
+
+            if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', toggleSidebar);
+            if (closeSidebarBtn) closeSidebarBtn.addEventListener('click', toggleSidebar);
+            if (sidebarOverlay) sidebarOverlay.addEventListener('click', toggleSidebar);
+
+            // Initialize count manager
+            window.countManager = new CountManager();
+            countManager.init();
+        });
+
+        function navigateTo(page) {
+            const pages = {
+                'dashboard': 'dashboard.html',
+                'inventory': 'inventory.html',
+                'ocr': 'ocr.html',
+                'count': 'count.html',
+                'reports': 'reports.html',
+                'waste': 'waste.html'
+            };
+
+            if (pages[page]) {
+                window.location.href = pages[page];
+            }
+        }
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', function () {
+            authManager.logout();
+            window.location.href = '/';
+        });
+    </script>
+</body>
+
+</html>

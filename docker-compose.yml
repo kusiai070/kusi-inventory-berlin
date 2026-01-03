@@ -1,0 +1,74 @@
+# Docker Compose for Enterprise Restaurant Inventory System
+# Development and production orchestration
+
+version: '3.8'
+
+services:
+  # Main application
+  app:
+    build: .
+    container_name: restaurant-inventory-app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - postgres
+    volumes:
+
+      - ./database:/app/database
+      - ./logs:/app/logs
+      - ./uploads:/app/uploads
+    networks:
+      - inventory-network
+
+  # Redis for caching (optional)
+  redis:
+    image: redis:7-alpine
+    container_name: restaurant-inventory-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - inventory-network
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: restaurant-inventory-db
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_DB=restaurant_inventory
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - inventory-network
+  # Nginx reverse proxy (optional)
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: restaurant-inventory-nginx
+  #   restart: unless-stopped
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
+  #     - ./ssl:/etc/nginx/ssl:ro
+  #   depends_on:
+  #     - app
+  #   networks:
+  #     - inventory-network
+
+volumes:
+  redis_data:
+  postgres_data:
+
+
+networks:
+  inventory-network:
+    driver: bridge
