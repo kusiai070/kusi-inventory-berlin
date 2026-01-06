@@ -4,7 +4,7 @@
 Dejar el sistema en estado "perfecto" corrigiendo el error del Dashboard y garantizando que la transición a PostgreSQL en producción sea transparente.
 
 ## Análisis de Producción (PostgreSQL)
-El sistema está diseñado correctamente usando **SQLAlchemy**, lo que permite cambiar el motor de base de datos simplemente modificando la variable `DATABASE_URL` en el archivo `.env`.
+El sistema está diseñado correctamente usando **SQLAlchemy**, lo que permite cambiar el motor de base de datos simplemente modificando la variable `DATABASE_URL` en el archivo [.env](file:///C:/Users/user/Desktop/restaurant_inventory_enterprise/.env).
 - **Compatibilidad:** Los tipos de datos usados (String, Integer, Numeric, DateTime) son compatibles con PostgreSQL.
 - **Enums:** Se usan Enums de SQLAlchemy que se mapean correctamente a tipos nativos o strings según el motor.
 - **Producción:** En el entorno de producción, solo será necesario configurar las credenciales de PostgreSQL en el servidor, y el código funcionará sin cambios adicionales.
@@ -13,8 +13,8 @@ El sistema está diseñado correctamente usando **SQLAlchemy**, lo que permite c
 
 ### Dashboard UI
 #### [MODIFY] [dashboard.html](file:///c:/Users/user/Desktop/restaurant_inventory_enterprise/frontend/dashboard.html)
-- Mover los scripts de `Chart.js`, `auth.js`, `dashboard.js` y `utils.js` al final del `<body>`.
-- Esto garantiza que la librería `Chart` esté cargada antes de que el `DashboardManager` intente instanciar las gráficas, solucionando el error "Chart is not defined".
+- Mover los scripts de `Chart.js`, `auth.js`, [dashboard.js](file:///c:/Users/user/Desktop/restaurant_inventory_enterprise/frontend/js/dashboard.js) y `utils.js` al final del `<body>`.
+- Esto garantiza que la librería [Chart](file:///c:/Users/user/Desktop/restaurant_inventory_enterprise/frontend/js/dashboard.js#271-318) esté cargada antes de que el [DashboardManager](file:///c:/Users/user/Desktop/restaurant_inventory_enterprise/frontend/js/dashboard.js#6-441) intente instanciar las gráficas, solucionando el error "Chart is not defined".
 
 ## Plan de Verificación
 
@@ -24,4 +24,4 @@ El sistema está diseñado correctamente usando **SQLAlchemy**, lo que permite c
 3. Confirmar que no hay errores de "ReferenceError: Chart is not defined" en la consola del navegador.
 
 ### Pruebas de Configuración
-1. Verificar que `config.py` carga correctamente la `DATABASE_URL` del entorno.
+1. Verificar que [config.py](file:///c:/Users/user/Desktop/restaurant_inventory_enterprise/backend/config.py) carga correctamente la `DATABASE_URL` del entorno.

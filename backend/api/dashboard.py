@@ -253,7 +253,7 @@ async def get_top_products(
         if metric == "consumption":
             # Get consumption in last 30 days
             month_ago = datetime.utcnow() - timedelta(days=30)
-            consumption = self.db.query(func.sum(StockMovement.quantity)).filter(
+            consumption = db.query(func.sum(StockMovement.quantity)).filter(
                 StockMovement.product_id == product.id,
                 StockMovement.movement_type == StockMovementType.OUT,
                 StockMovement.created_at >= month_ago
@@ -268,7 +268,7 @@ async def get_top_products(
             
         else:  # movement
             month_ago = datetime.utcnow() - timedelta(days=30)
-            movements = self.db.query(StockMovement).filter(
+            movements = db.query(StockMovement).filter(
                 StockMovement.product_id == product.id,
                 StockMovement.created_at >= month_ago
             ).count()

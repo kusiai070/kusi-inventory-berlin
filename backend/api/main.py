@@ -8,11 +8,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from contextlib import asynccontextmanager
-import os
+from pathlib import Path
 import sys
+import os
 
 # Add parent directory to path for imports
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+sys.path.append(str(BASE_DIR))
 
 from backend.models.database import Base, engine
 from backend.api.auth import router as auth_router, get_current_user
@@ -29,11 +31,11 @@ from backend.config import settings
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    print("🚀 Iniciando Sistema Enterprise de Inventarios...")
-    print("📡 API REST configurada correctamente")
+    print("Iniciando Sistema Enterprise de Inventarios...")
+    print("API REST configurada correctamente")
     yield
     # Shutdown
-    print("🛑 Cerrando sistema...")
+    print("Cerrando sistema...")
 
 # Create FastAPI app
 app = FastAPI(
@@ -66,9 +68,20 @@ app.include_router(dashboard_router, prefix="/api/dashboard", tags=["Dashboard"]
 app.include_router(admin_router, prefix="/api/admin", tags=["Super Admin"])
 
 # Mount static files
-static_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend")
-if os.path.exists(static_dir):
-    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+# En ejecución local (sin Docker), main.py está en backend/api/
+# y frontend/ está en la raíz del proyecto (dos niveles arriba)
+current_file_path = Path(__file__).resolve()
+project_root = current_file_path.parent.parent.parent
+static_dir = project_root / "frontend"
+
+print(f"Ruta Base del Proyecto: {project_root}")
+print(f"Buscando frontend en: {static_dir}")
+
+if static_dir.exists():
+    print("Frontend encontrado. Montando estaticos...")
+    app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+else:
+    print(f"ERROR CRITICO: No se encuentra la carpeta frontend en {static_dir}")
 
 # Root endpoint - serve main app
 @app.get("/")
@@ -102,9 +115,9 @@ async def test_auth(current_user = Depends(get_current_user)):
 if __name__ == "__main__":
     import uvicorn
     
-    print("🏪 Enterprise Restaurant Inventory System")
-    print("🚀 Starting server...")
-    print("📡 API available at: http://localhost:8000")
-    print("📊 Documentation: http://localhost:8000/docs")
+    print("Enterprise Restaurant Inventory System")
+    print("Starting server...")
+    print("API available at: http://localhost:8000")
+    print("Documentation: http://localhost:8000/docs")
     
     uvicorn.run(app, host="0.0.0.0", port=8000, reload=False)

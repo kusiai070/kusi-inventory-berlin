@@ -1,0 +1,30 @@
+{
+    "dashboard": {
+        "title": "Dashboard Ejecutivo",
+        "subtitle": "Panel de control del sistema de inventarios",
+        "weekly_consumption": "Consumo Semanal",
+        "category_distribution": "Distribución por Categoría",
+        "urgent_alerts": "Alertas Urgentes",
+        "quick_actions": "Acciones Rápidas",
+        "top_products": "Productos con Mayor Rotación"
+    },
+    "inventory": {
+        "title": "Gestión de Inventario",
+        "new_product": "Nuevo Producto",
+        "export": "Exportar",
+        "search": "Buscar",
+        "category": "Categoría",
+        "stock_status": "Estado Stock"
+    },
+    "ocr": {
+        "title": "Facturas OCR",
+        "upload_title": "Subir Factura",
+        "drop_text": "Arrastra tu factura aquí o haz clic para seleccionar"
+    },
+    "common": {
+        "save": "Guardar",
+        "cancel": "Cancelar",
+        "delete": "Eliminar",
+        "logout": "Cerrar Sesión"
+    }
+}

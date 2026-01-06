@@ -1,0 +1,30 @@
+{
+    "dashboard": {
+        "title": "Executive Dashboard",
+        "subtitle": "Inventory system control panel",
+        "weekly_consumption": "Weekly Consumption",
+        "category_distribution": "Category Distribution",
+        "urgent_alerts": "Urgent Alerts",
+        "quick_actions": "Quick Actions",
+        "top_products": "Top Rotation Products"
+    },
+    "inventory": {
+        "title": "Inventory Management",
+        "new_product": "New Product",
+        "export": "Export",
+        "search": "Search",
+        "category": "Category",
+        "stock_status": "Stock Status"
+    },
+    "ocr": {
+        "title": "OCR Invoices",
+        "upload_title": "Upload Invoice",
+        "drop_text": "Drag your invoice here or click to select"
+    },
+    "common": {
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "logout": "Logout"
+    }
+}

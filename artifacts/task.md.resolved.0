@@ -1,0 +1,12 @@
+# Recuperación y Diagnóstico de Login
+
+- [ ] **Análisis de Bloqueo** <!-- id: 0 -->
+    - [ ] Identificar causa raíz (UnicodeEncodeError en Windows) <!-- id: 1 -->
+    - [ ] Planear corrección segura (eliminar emojis/caracteres especiales) <!-- id: 2 -->
+- [ ] **Corrección de Código (Robustez)** <!-- id: 3 -->
+    - [ ] Limpiar `seed_db.py` de caracteres incompatibles <!-- id: 4 -->
+    - [ ] Verificar otros scripts (`boot.ps1`, `check_db_users.py`) <!-- id: 5 -->
+- [ ] **Verificación del Sistema** <!-- id: 6 -->
+    - [ ] Validar usuarios en base de datos <!-- id: 7 -->
+    - [ ] Probar inicio del servidor y login <!-- id: 8 -->
+    - [ ] Validar solución final con el usuario <!-- id: 9 -->

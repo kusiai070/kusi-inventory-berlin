@@ -1,0 +1,32 @@
+# Plan de Recuperación y Reparación de Login
+
+## Objetivo
+Solucionar el bloqueo recurrente del agente (causado por errores de codificación `UnicodeEncodeError` en Windows) y finalizar la reparación del sistema de login.
+
+## Análisis del Bloqueo
+El error previo `UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f331'` indica que los scripts de Python están intentando imprimir emojis (🌱) en una terminal de Windows que no está configurada para UTF-8 por defecto. Esto causa que el script falle inmediatamente, interrumpiendo el flujo del agente.
+
+**La "Otra Manera":** En lugar de intentar forzar la configuración de la terminal (que puede ser inestable), **eliminaremos los caracteres especiales (emojis)** de los scripts de log y feedback. Esto garantiza que el código sea agnóstico al entorno y no se bloquee por "detalles cosméticos".
+
+## Cambios Propuestos
+
+### Backend
+#### [MODIFY] [seed_db.py](file:///C:/Users/user/Desktop/restaurant_inventory_enterprise/seed_db.py)
+- Eliminar todos los emojis de los `print()`.
+- Asegurar que el manejo de errores sea limpio.
+
+#### [MODIFY] [check_db_users.py](file:///C:/Users/user/Desktop/restaurant_inventory_enterprise/check_db_users.py)
+- Confirmar que este script de diagnóstico también sea seguro (ASCII safe).
+
+## Dashboard UI Fix
+### [MODIFY] [dashboard.html](file:///c:/Users/user/Desktop/restaurant_inventory_enterprise/frontend/dashboard.html)
+- Ensure Chart.js is loaded before dashboard.js.
+- Move dashboard scripts to the end of the body to ensure DOM and libraries are ready.
+
+## Plan de Verificación
+
+### Pruebas Automatizadas
+1. Ejecutar [seed_db.py](file:///C:/Users/user/Desktop/restaurant_inventory_enterprise/seed_db.py) (si es necesario reinicializar) o [check_db_users.py](file:///C:/Users/user/Desktop/restaurant_inventory_enterprise/check_db_users.py) para confirmar acceso a DB sin crashes.
+2. Iniciar el servidor backend.
+3. Ejecutar script de prueba de login [diagnose_login.py](file:///C:/Users/user/Desktop/restaurant_inventory_enterprise/diagnose_login.py) (o similar) para confirmar acceso 200 OK.
+4. Usar el navegador para verificar que el Dashboard carga las gráficas sin errores de consola.

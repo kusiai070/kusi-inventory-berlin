@@ -6,6 +6,7 @@ Seed database with demo data for testing
 
 import os
 import sys
+from decimal import Decimal
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime, timedelta
@@ -20,17 +21,50 @@ def seed_database():
     """Insertar datos de demostración"""
     
     # Conectar a base de datos
-    db_path = os.path.join(os.path.dirname(__file__), "database", "inventory.db")
+    # db_path = os.path.join(os.path.dirname(__file__), "database", "inventory.db")
+    # Usar enterprise_local.db para coincidir con el .env
+    db_path = os.path.join(os.path.dirname(__file__), "enterprise_local.db")
     engine = create_engine(f"sqlite:///{db_path}", echo=False)
     
     Session = sessionmaker(bind=engine)
     session = Session()
     
-    print("🌱 Insertando datos de demostración...")
+    print("Insertando datos de demostracion...")
     
     try:
+        # Crear restaurantes si no existen
+        print("Verificando restaurantes...")
+        restaurants = session.query(Restaurant).all()
+        if not restaurants:
+            print("Creando restaurantes iniciales...")
+            rest1 = Restaurant(name="Restaurante El Sol", address="Calle Sol 123", currency="USD", timezone="UTC")
+            rest2 = Restaurant(name="Bistro Luna", address="Av. Luna 456", currency="EUR", timezone="CET")
+            rest3 = Restaurant(name="Cafe Estrella", address="Plaza Estrella 789", currency="MXN", timezone="GMT-6")
+            session.add_all([rest1, rest2, rest3])
+            session.commit()
+            restaurants = [rest1, rest2, rest3]
+            print(f"{len(restaurants)} restaurantes creados.")
+
+        # Crear categorías si no existen
+        from backend.models.database import Category
+        print("Verificando categorias...")
+        if not session.query(Category).count():
+            cat1 = Category(name="Alimentos", type="food")
+            cat2 = Category(name="Bebidas", type="beverage")
+            cat3 = Category(name="Limpieza", type="cleaning")
+            session.add_all([cat1, cat2, cat3])
+            session.commit()
+
+        # Crear proveedores si no existen
+        from backend.models.database import Provider
+        print("Verificando proveedores...")
+        if not session.query(Provider).count():
+            prov1 = Provider(name="Proveedor Global", contact_person="Juan Perez", email="juan@global.com")
+            session.add(prov1)
+            session.commit()
+            
         # Crear usuarios de ejemplo
-        print("👤 Creando usuarios de ejemplo...")
+        print("Creando usuarios de ejemplo...")
         restaurants = session.query(Restaurant).all()
         
         for restaurant in restaurants:
@@ -65,10 +99,10 @@ def seed_database():
             session.add(staff)
         
         session.commit()
-        print("✅ Usuarios creados")
+        print("Usuarios creados")
         
         # Crear productos de ejemplo para cada restaurante
-        print("📦 Creando productos de ejemplo...")
+        print("Creando productos de ejemplo...")
         categories = session.query(Category).all()
         providers = session.query(Provider).all()
         
@@ -112,10 +146,10 @@ def seed_database():
                         session.add(product)
         
         session.commit()
-        print("✅ Productos creados")
+        print("Productos creados")
         
         # Crear movimientos de stock
-        print("📊 Creando movimientos de stock...")
+        print("Creando movimientos de stock...")
         products = session.query(Product).all()
         users = session.query(User).all()
         
@@ -123,9 +157,9 @@ def seed_database():
             # Movimiento de entrada (compra)
             movement_in = StockMovement(
                 product_id=product.id,
-                movement_type="IN",
-                quantity=10.0,
-                previous_stock=product.current_stock - 10.0,
+                movement_type="IN", # Keeping original movement_type as TransactionType is not defined in the provided context
+                quantity=Decimal("10.0"),
+                previous_stock=product.current_stock - Decimal("10.0"),
                 new_stock=product.current_stock,
                 reason="Compra inicial",
                 reference_id=f"INV-{datetime.now().strftime('%Y%m%d')}-001",
@@ -138,9 +172,9 @@ def seed_database():
             movement_out = StockMovement(
                 product_id=product.id,
                 movement_type="OUT",
-                quantity=2.0,
+                quantity=Decimal("2.0"),
                 previous_stock=product.current_stock,
-                new_stock=product.current_stock - 2.0,
+                new_stock=product.current_stock - Decimal("2.0"),
                 reason="Consumo del día",
                 reference_id=f"CONS-{datetime.now().strftime('%Y%m%d')}-001",
                 user_id=users[1].id,
@@ -149,10 +183,10 @@ def seed_database():
             session.add(movement_out)
         
         session.commit()
-        print("✅ Movimientos de stock creados")
+        print("Movimientos de stock creados")
         
         # Crear facturas de ejemplo
-        print("📄 Creando facturas de ejemplo...")
+        print("Creando facturas de ejemplo...")
         for restaurant in restaurants:
             provider = providers[0]
             
@@ -161,9 +195,9 @@ def seed_database():
                 invoice_date=datetime.now().date(),
                 provider_id=provider.id,
                 restaurant_id=restaurant.id,
-                subtotal=150.0,
-                tax=15.0,
-                total=165.0,
+                subtotal=Decimal("150.0"),
+                tax=Decimal("15.0"),
+                total=Decimal("165.0"),
                 ocr_text="Factura de ejemplo procesada por OCR",
                 ocr_confidence=0.95,
                 status="processed",
@@ -180,35 +214,35 @@ def seed_database():
                     invoice_id=invoice.id,
                     product_id=product.id,
                     product_name=product.name,
-                    quantity=10.0,
+                    quantity=Decimal("10.0"),
                     unit_price=product.cost_price,
-                    total_price=10.0 * product.cost_price,
+                    total_price=Decimal("10.0") * product.cost_price,
                     stock_updated=True
                 )
                 session.add(item)
         
         session.commit()
-        print("✅ Facturas creadas")
+        print("Facturas creadas")
         
         # Crear mermas de ejemplo
-        print("⚠️ Creando registros de merma...")
+        print("Creando registros de merma...")
         for product in products[:3]:
             waste = WasteLog(
                 product_id=product.id,
                 restaurant_id=product.restaurant_id,
-                quantity=1.5,
+                quantity=Decimal("1.5"),
                 waste_type="preparation",
                 reason="Preparación excesiva",
-                cost=1.5 * product.cost_price,
+                cost=Decimal("1.5") * product.cost_price,
                 user_id=users[0].id
             )
             session.add(waste)
         
         session.commit()
-        print("✅ Mermas registradas")
+        print("Mermas registradas")
         
         # Crear alertas de ejemplo
-        print("🚨 Creando alertas del sistema...")
+        print("Creando alertas del sistema...")
         for restaurant in restaurants:
             # Alerta de stock bajo
             alert_low_stock = Alert(
@@ -235,19 +269,19 @@ def seed_database():
             session.add(alert_count)
         
         session.commit()
-        print("✅ Alertas creadas")
+        print("Alertas creadas")
         
-        print("\n🎉 Datos de demostración insertados exitosamente!")
+        print("\nDatos de demostracion insertados exitosamente!")
         print("\nCredenciales de prueba:")
         for restaurant in restaurants:
             domain = restaurant.name.lower().replace(' ', '')
-            print(f"\n🏪 {restaurant.name}:")
+            print(f"\n{restaurant.name}:")
             print(f"   Admin: admin@{domain}.com / admin123")
             print(f"   Manager: manager@{domain}.com / manager123")
             print(f"   Staff: staff@{domain}.com / staff123")
         
     except Exception as e:
-        print(f"❌ Error insertando datos: {e}")
+        print(f"Error insertando datos: {e}")
         session.rollback()
         raise
     

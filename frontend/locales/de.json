@@ -1,0 +1,30 @@
+{
+    "dashboard": {
+        "title": "Executive Dashboard",
+        "subtitle": "Bestandssystem-Kontrollpanel",
+        "weekly_consumption": "Wöchentlicher Verbrauch",
+        "category_distribution": "Kategorieverteilung",
+        "urgent_alerts": "Dringende Warnungen",
+        "quick_actions": "Schnellaktionen",
+        "top_products": "Produkte mit höchster Rotation"
+    },
+    "inventory": {
+        "title": "Bestandsverwaltung",
+        "new_product": "Neues Produkt",
+        "export": "Exportieren",
+        "search": "Suchen",
+        "category": "Kategorie",
+        "stock_status": "Lagerstatus"
+    },
+    "ocr": {
+        "title": "OCR-Rechnungen",
+        "upload_title": "Rechnung hochladen",
+        "drop_text": "Ziehen Sie Ihre Rechnung hierher oder klicken Sie zum Auswählen"
+    },
+    "common": {
+        "save": "Speichern",
+        "cancel": "Abbrechen",
+        "delete": "Löschen",
+        "logout": "Abmelden"
+    }
+}

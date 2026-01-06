@@ -1,0 +1,5 @@
+{
+  "artifactType":  "ARTIFACT_TYPE_IMPLEMENTATION_PLAN",
+  "summary":  "Plan to fix the UnicodeEncodeError by sanitizing scripts and verifying the login flow.",
+  "updatedAt":  "2026-01-03T16:57:27.191329800Z"
+}

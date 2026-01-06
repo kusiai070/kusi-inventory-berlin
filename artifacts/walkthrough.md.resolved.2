@@ -4,17 +4,17 @@ He finalizado la estabilización del sistema de inventarios, solucionando los bl
 
 ## Problemas Resueltos
 
-1. **Bloqueo por Unicode (Windows):** Se eliminaron todos los emojis de los scripts `seed_db.py` y `check_db_users.py`. Esto evita que la terminal de Windows falle al intentar procesar caracteres que no soporta su codificación por defecto (`charmap`), eliminando la causa raíz de los bloqueos del agente.
+1. **Bloqueo por Unicode (Windows):** Se eliminaron todos los emojis de los scripts [seed_db.py](file:///C:/Users/user/Desktop/restaurant_inventory_enterprise/seed_db.py) y [check_db_users.py](file:///C:/Users/user/Desktop/restaurant_inventory_enterprise/check_db_users.py). Esto evita que la terminal de Windows falle al intentar procesar caracteres que no soporta su codificación por defecto (`charmap`), eliminando la causa raíz de los bloqueos del agente.
 2. **Error de Login 401 (Unauthorized):**
-   - Se detectó que la base de datos configurada en `.env` (`enterprise_local.db`) estaba vacía.
-   - Se corrigió `seed_db.py` para que cree automáticamente los restaurantes y categorías base si no existen.
-   - Se actualizó el script para que apunte directamente a `enterprise_local.db`.
+   - Se detectó que la base de datos configurada en [.env](file:///C:/Users/user/Desktop/restaurant_inventory_enterprise/.env) ([enterprise_local.db](file:///C:/Users/user/Desktop/restaurant_inventory_enterprise/enterprise_local.db)) estaba vacía.
+   - Se corrigió [seed_db.py](file:///C:/Users/user/Desktop/restaurant_inventory_enterprise/seed_db.py) para que cree automáticamente los restaurantes y categorías base si no existen.
+   - Se actualizó el script para que apunte directamente a [enterprise_local.db](file:///C:/Users/user/Desktop/restaurant_inventory_enterprise/enterprise_local.db).
 3. **Persistencia de Datos:** Se repobló la base de datos con credenciales de prueba válidas y sin caracteres especiales.
 
 ## Verificación de Resultados
 
 ### Test de Login Automatizado
-Ejecuté `diagnose_login.py` contra el servidor en ejecución:
+Ejecuté [diagnose_login.py](file:///C:/Users/user/Desktop/restaurant_inventory_enterprise/diagnose_login.py) contra el servidor en ejecución:
 
 ```json
 Enviando peticion a http://localhost:8000/api/auth/login...
@@ -27,7 +27,7 @@ Utilicé un agente de navegación para validar la experiencia de usuario:
 - **Estabilidad:** El servidor se mantuvo activo durante toda la sesión sin cierres inesperados.
 - **Flujo de Trabajo:** Login exitoso y navegación completa.
 - **Gráficas:** Se corrigió la carga de `Chart.js` (orden de scripts y sensibilidad a mayúsculas), logrando el renderizado perfecto de métricas.
-- **Backend:** Se corrigió un error en `dashboard.py` que impedía ver los productos con mayor rotación.
+- **Backend:** Se corrigió un error en [dashboard.py](file:///c:/Users/user/Desktop/restaurant_inventory_enterprise/backend/api/dashboard.py) que impedía ver los productos con mayor rotación.
 
 ![Dashboard Finalizado y Funcional](file:///C:/Users/user/.gemini/antigravity/brain/aeecf0cd-944a-4c0d-8283-a70e18498de0/dashboard_fixed_final_1767460408514.png)
 *Estado final del Dashboard con todas las gráficas y métricas cargadas.*

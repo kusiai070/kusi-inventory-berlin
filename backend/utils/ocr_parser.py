@@ -21,28 +21,28 @@ class OCRParser:
         # Spanish invoice patterns
         self.invoice_patterns = {
             'invoice_number': [
-                r'(?:factura|número\s+de\s+factura|n[°º]\s+factura|nro\.?\s*factura)[\s:]*([A-Z0-9\-]+)',
+                r'(?:factura|rechnung|n[°º]\s+factura|nro\.?\s*factura|rechnungsnummer)[\s:]*([A-Z0-9\-]+)',
                 r'(?:n[°º]\s*[:.]?\s*)([A-Z0-9\-]{5,20})',
                 r'(?:ref\.?|referencia)[\s:]*([A-Z0-9\-]+)'
             ],
             'date': [
-                r'(?:fecha|fecha\s+de\s+emisi[óo]n|fecha\s+factura)[\s:]*(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})',
-                r'(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})'
+                r'(?:fecha|datum|rechnungsdatum|fecha\s+de\s+emisi[óo]n)[\s:]*(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4})',
+                r'(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4})'
             ],
             'provider': [
-                r'(?:proveedor|vendedor|raz[óo]n\s+social)[\s:]*(.{5,50})',
-                r'(?:nombre|empresa)[\s:]*(.{5,50})'
+                r'(?:proveedor|vendedor|lieferant|raz[óo]n\s+social|firma)[\s:]*(.{5,50})',
+                r'(?:nombre|empresa|name)[\s:]*(.{5,50})'
             ],
             'total': [
-                r'(?:total|total\s+a\s+pagar|importe\s+total)[\s:]*\$?\s*(\d+[,.]?\d{0,2})',
-                r'(?:total)[\s:]*(\d+[,.]?\d{0,2})'
+                r'(?:total|gesamtsumme|gesamtbetrag|total\s+a\s+pagar)[\s:]*[€$]?\s*(\d+[,.]?\d{0,2})',
+                r'(?:summe)[\s:]*(\d+[,.]?\d{0,2})'
             ],
             'subtotal': [
-                r'(?:subtotal|base\s+imponible|sub\-total)[\s:]*\$?\s*(\d+[,.]?\d{0,2})'
+                r'(?:subtotal|netto|netto-betrag|base\s+imponible)[\s:]*[€$]?\s*(\d+[,.]?\d{0,2})'
             ],
             'tax': [
-                r'(?:iva|impuesto|tax)[\s:]*\$?\s*(\d+[,.]?\d{0,2})',
-                r'(?:igv|vat)[\s:]*\$?\s*(\d+[,.]?\d{0,2})'
+                r'(?:iva|mwst|mehrwertsteuer|impuesto)[\s:]*[€$]?\s*(\d+[,.]?\d{0,2})',
+                r'(?:ust|vat)[\s:]*[€$]?\s*(\d+[,.]?\d{0,2})'
             ]
         }
         
@@ -75,8 +75,8 @@ class OCRParser:
             # Preprocess image for better OCR
             processed_image = self._preprocess_image(image)
             
-            # Perform OCR with Spanish language
-            custom_config = r'--oem 3 --psm 6 -l spa'
+            # Perform OCR with Spanish and German language support
+            custom_config = r'--oem 3 --psm 6 -l spa+deu'
             text = pytesseract.image_to_string(processed_image, config=custom_config)
             
             # Parse extracted text

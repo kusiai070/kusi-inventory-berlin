@@ -3,7 +3,7 @@ Authentication module for Enterprise Restaurant Inventory System
 Módulo de autenticación - Sistema Enterprise de Inventarios
 """
 
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from sqlalchemy.orm import Session, sessionmaker
@@ -61,6 +61,16 @@ except ImportError:
     rate_limiter_available = False
     limiter = None
 
+if not rate_limiter_available or limiter is None:
+    # Dummy limiter to avoid AttributeError when decorator is used
+    class DummyLimiter:
+        def limit(self, limit_value):
+            def decorator(func):
+                return func
+            return decorator
+    
+    limiter = DummyLimiter()
+
 def create_access_token(data: dict, expires_delta: timedelta = None):
     """Create JWT access token"""
     to_encode = data.copy()
@@ -97,54 +107,78 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
 
 @router.post("/login", response_model=TokenResponse)
 @limiter.limit("5/minute") # Add rate limiting to login endpoint
-async def login(request: LoginRequest, db: Session = Depends(get_db)):
+async def login(request: Request, login_data: LoginRequest, db: Session = Depends(get_db)):
     """Login endpoint with rate limiting"""
-    # Find user by email
-    user = db.query(User).filter(User.email == request.email).first()
-    
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password"
+    print(f"Login attempt for: {login_data.email}")
+    try:
+        # Find user by email
+        user = db.query(User).filter(User.email == login_data.email).first()
+        
+        if not user:
+            print(f"User not found: {login_data.email}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect email or password"
+            )
+        
+        print(f"User found: {user.id} - Role: {user.role}")
+        
+        if not user.is_active:
+            print("User account disabled")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User account is disabled"
+            )
+        
+        # Verify password
+        print("Verifying password...")
+        is_valid = check_password_hash(user.hashed_password, login_data.password)
+        print(f"Password valid? {is_valid}")
+        
+        if not is_valid:
+            print("Password mismatch")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect email or password"
+            )
+        
+        # Get restaurant info
+        restaurant = db.query(Restaurant).filter(Restaurant.id == user.restaurant_id).first()
+        print(f"Restaurant: {restaurant.name if restaurant else 'None'}")
+        
+        # Create access token
+        print("Creating access token...")
+        access_token = create_access_token(
+            data={"sub": user.email, "role": user.role, "restaurant_id": user.restaurant_id}
         )
-    
-    if not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User account is disabled"
+        print("Token created successfully")
+        
+        # Update last login
+        user.last_login = datetime.utcnow()
+        db.commit()
+        
+        return TokenResponse(
+            access_token=access_token,
+            token_type="bearer",
+            user={
+                "id": user.id,
+                "email": user.email,
+                "full_name": user.full_name,
+                "role": user.role,
+                "restaurant_id": user.restaurant_id,
+                "restaurant_name": restaurant.name if restaurant else None
+            }
         )
-    
-    # Verify password
-    if not check_password_hash(user.hashed_password, request.password):
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"CRITICAL LOGIN ERROR: {str(e)}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Login Error: {str(e)}"
         )
-    
-    # Get restaurant info
-    restaurant = db.query(Restaurant).filter(Restaurant.id == user.restaurant_id).first()
-    
-    # Create access token
-    access_token = create_access_token(
-        data={"sub": user.email, "role": user.role, "restaurant_id": user.restaurant_id}
-    )
-    
-    # Update last login
-    user.last_login = datetime.utcnow()
-    db.commit()
-    
-    return TokenResponse(
-        access_token=access_token,
-        token_type="bearer",
-        user={
-            "id": user.id,
-            "email": user.email,
-            "full_name": user.full_name,
-            "role": user.role,
-            "restaurant_id": user.restaurant_id,
-            "restaurant_name": restaurant.name if restaurant else None
-        }
-    )
 
 @router.get("/me", response_model=dict)
 async def get_current_user_info(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):

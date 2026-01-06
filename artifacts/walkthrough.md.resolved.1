@@ -1,0 +1,47 @@
+# Walkthrough: Reparación de Login y Robustez del Sistema
+
+He finalizado la estabilización del sistema de inventarios, solucionando los bloqueos recurrentes y restaurando la funcionalidad de autenticación.
+
+## Problemas Resueltos
+
+1. **Bloqueo por Unicode (Windows):** Se eliminaron todos los emojis de los scripts [seed_db.py](file:///C:/Users/user/Desktop/restaurant_inventory_enterprise/seed_db.py) y [check_db_users.py](file:///C:/Users/user/Desktop/restaurant_inventory_enterprise/check_db_users.py). Esto evita que la terminal de Windows falle al intentar procesar caracteres que no soporta su codificación por defecto (`charmap`), eliminando la causa raíz de los bloqueos del agente.
+2. **Error de Login 401 (Unauthorized):**
+   - Se detectó que la base de datos configurada en [.env](file:///C:/Users/user/Desktop/restaurant_inventory_enterprise/.env) ([enterprise_local.db](file:///C:/Users/user/Desktop/restaurant_inventory_enterprise/enterprise_local.db)) estaba vacía.
+   - Se corrigió [seed_db.py](file:///C:/Users/user/Desktop/restaurant_inventory_enterprise/seed_db.py) para que cree automáticamente los restaurantes y categorías base si no existen.
+   - Se actualizó el script para que apunte directamente a [enterprise_local.db](file:///C:/Users/user/Desktop/restaurant_inventory_enterprise/enterprise_local.db).
+3. **Persistencia de Datos:** Se repobló la base de datos con credenciales de prueba válidas y sin caracteres especiales.
+
+## Verificación de Resultados
+
+### Test de Login Automatizado
+Ejecuté [diagnose_login.py](file:///C:/Users/user/Desktop/restaurant_inventory_enterprise/diagnose_login.py) contra el servidor en ejecución:
+
+```json
+Enviando peticion a http://localhost:8000/api/auth/login...
+Status Code: 200
+Login EXITOSO
+```
+
+### Verificación Visual (Browser)
+Utilicé un agente de navegación para validar la experiencia de usuario:
+- **Estabilidad:** El servidor se mantuvo activo durante toda la sesión sin cierres inesperados.
+- **Flujo de Trabajo:** Se realizó login exitoso y se navegó por las secciones de Dashboard e Inventario.
+
+![Dashboard cargado exitosamente](file:///C:/Users/user/.gemini/antigravity/brain/aeecf0cd-944a-4c0d-8283-a70e18498de0/.system_generated/click_feedback/click_feedback_1767460037696.png)
+*Captura de la sección de Inventario tras un login exitoso.*
+
+> [!NOTE]
+> Se detectó un error cosmético (`Chart is not defined`) que afecta a las gráficas del Dashboard, pero no impide el uso de las funciones principales de inventario y gestión.
+
+
+## Credenciales de Prueba Actualizadas
+Todas las contraseñas son: `admin123`, `manager123` o `staff123` según el rol.
+
+| Restaurante | Email Admin |
+| :--- | :--- |
+| Restaurante El Sol | `admin@restauranteelsol.com` |
+| Bistro Luna | `admin@bistroluna.com` |
+| Cafe Estrella | `admin@cafeestrella.com` |
+
+> [!IMPORTANT]
+> El sistema ahora es agnóstico a la configuración de la terminal de Windows al usar solo caracteres ASCII en los logs críticos.

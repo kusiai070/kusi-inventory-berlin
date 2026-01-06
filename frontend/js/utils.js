@@ -10,11 +10,11 @@ class Utils {
      * @param {string} currency - Currency code (default: USD)
      * @returns {string} Formatted currency string
      */
-    static formatCurrency(amount, currency = 'USD') {
+    static formatCurrency(amount, currency = 'EUR') {
         const num = parseFloat(amount);
-        if (isNaN(num)) return '$0.00';
+        if (isNaN(num)) return '0,00 €';
 
-        return new Intl.NumberFormat('en-US', {
+        return new Intl.NumberFormat('es-ES', {
             style: 'currency',
             currency: currency,
             minimumFractionDigits: 2,
@@ -53,7 +53,7 @@ class Utils {
         const num = parseFloat(number);
         if (isNaN(num)) return '0';
 
-        return new Intl.NumberFormat('en-US', {
+        return new Intl.NumberFormat('es-ES', {
             minimumFractionDigits: decimals,
             maximumFractionDigits: decimals
         }).format(num);
@@ -269,6 +269,37 @@ class Utils {
      * @param {Object} translations - Translation object
      * @returns {string} Localized text
      */
+    static async loadTranslations(lang) {
+        try {
+            const response = await fetch(`/static/locales/${lang}.json`);
+            this.translations = await response.json();
+            this.translatePage();
+            localStorage.setItem('preferred_language', lang);
+        } catch (error) {
+            console.error('Error loading translations:', error);
+        }
+    }
+
+    static translatePage() {
+        if (!this.translations) return;
+
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            const translation = this.getNestedTranslation(this.translations, key);
+            if (translation) {
+                if (el.tagName === 'INPUT' && el.placeholder) {
+                    el.placeholder = translation;
+                } else {
+                    el.textContent = translation;
+                }
+            }
+        });
+    }
+
+    static getNestedTranslation(obj, path) {
+        return path.split('.').reduce((prev, curr) => prev ? prev[curr] : null, obj);
+    }
+
     static localize(key, translations = {}) {
         const language = this.getUserLanguage().substr(0, 2);
         return translations[language]?.[key] || translations['en']?.[key] || key;
