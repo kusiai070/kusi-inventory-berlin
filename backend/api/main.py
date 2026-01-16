@@ -92,6 +92,42 @@ async def serve_app():
         return FileResponse(index_path)
     return {"message": "Enterprise Restaurant Inventory System API", "status": "running"}
 
+# Explicit routes for all HTML pages (production compatibility)
+@app.get("/dashboard.html")
+async def dashboard():
+    """Serve dashboard page"""
+    return FileResponse(os.path.join(static_dir, "dashboard.html"))
+
+@app.get("/admin.html")
+async def admin():
+    """Serve admin page"""
+    return FileResponse(os.path.join(static_dir, "admin.html"))
+
+@app.get("/count.html")
+async def count():
+    """Serve count page"""
+    return FileResponse(os.path.join(static_dir, "count.html"))
+
+@app.get("/inventory.html")
+async def inventory():
+    """Serve inventory page"""
+    return FileResponse(os.path.join(static_dir, "inventory.html"))
+
+@app.get("/ocr.html")
+async def ocr():
+    """Serve OCR page"""
+    return FileResponse(os.path.join(static_dir, "ocr.html"))
+
+@app.get("/reports.html")
+async def reports():
+    """Serve reports page"""
+    return FileResponse(os.path.join(static_dir, "reports.html"))
+
+@app.get("/waste.html")
+async def waste():
+    """Serve waste management page"""
+    return FileResponse(os.path.join(static_dir, "waste.html"))
+
 # Health check endpoint
 @app.get("/health")
 async def health_check():
