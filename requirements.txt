@@ -1,8 +1,15 @@
 fastapi
 uvicorn[standard]
+python-dotenv
+python-multipart
 sqlalchemy
 psycopg2-binary
-python-jose[cryptography]
 passlib[bcrypt]
-python-multipart
+python-jose[cryptography]
 bcrypt
+pydantic
+reportlab
+openpyxl
+pytesseract
+pdf2image
+Pillow
