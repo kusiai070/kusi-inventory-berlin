@@ -48,3 +48,7 @@ uploads/
 database/*.db
 postgres_data/
 redis_data/
+
+# Seguridad Adicional
+*.db
+*.sqlite

@@ -101,6 +101,35 @@ async def create_waste_log(
     
     db.add(waste_log)
     db.flush()  # Get waste_log.id before stock update
+
+    # Anomaly detection (MVP Z-Score)
+    try:
+        from backend.utils.anomaly_detector import AnomalyDetector
+        
+        anomaly_analysis = AnomalyDetector.analyze_waste(
+            db=db,
+            product_id=waste.product_id,
+            quantity=waste.quantity,
+            restaurant_id=current_user.restaurant_id,
+            days=30
+        )
+        
+        # If anomalous, create Alert
+        if anomaly_analysis.get("analysis_possible") and anomaly_analysis["detection"]["is_anomalous"]:
+            from backend.models.database import Alert
+            
+            alert = Alert(
+                restaurant_id=current_user.restaurant_id,
+                alert_type="waste_anomaly",
+                severity=anomaly_analysis["detection"]["severity"],
+                title=f"Anomalous waste detected: {product.name}",
+                message=anomaly_analysis["interpretation"],
+                is_active=True
+            )
+            db.add(alert)
+    except Exception as e:
+        print(f"Anomaly check failed: {e}")  # Non-blocking
+
     
     # Update product stock atomically (prevent race conditions)
     rows_updated = db.query(Product).filter(

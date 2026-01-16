@@ -17,7 +17,7 @@ Sistema de gestión de inventarios multi-tenant (SaaS) diseñado para cadenas de
 
 ### 🤖 Inteligencia Artificial & Automatización
 *   **OCR de Facturas:** Motor Tesseract integrado para escanear facturas (PDF/Imágenes) y actualizar stock automáticamente.
-*   **Detección de Anomalías:** Algoritmos para identificar mermas inusuales o robos (Consumo Real vs Teórico).
+*   **Detección de Anomalías:** Algoritmo estadístico Z-Score (MVP v1.0) para identificar mermas inusuales. (ML avanzado: Roadmap Q2 2026).
 
 ### 📊 Reportes Legales & Financieros
 *   **Motor de Exportación:** Generación de documentos en **PDF** (firmables) y **Excel** (contables) al vuelo.
