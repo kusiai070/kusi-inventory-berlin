@@ -154,6 +154,57 @@ async def get_products(
     
     return [get_product_response(p, db) for p in products]
 
+@router.get("/categories/list")
+async def get_categories(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get all categories"""
+    categories = db.query(Category).filter(Category.is_active == True).all()
+    return [{"id": c.id, "name": c.name, "type": c.type, "icon": c.icon} for c in categories]
+
+@router.get("/providers/list")
+async def get_providers(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get all providers"""
+    providers = db.query(Provider).filter(Provider.is_active == True).all()
+    return [{"id": p.id, "name": p.name, "contact_person": p.contact_person} for p in providers]
+
+@router.get("/stats")
+async def get_product_stats(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get product statistics"""
+    if current_user.restaurant_id is None:
+        raise HTTPException(status_code=403, detail="User not assigned to restaurant")
+    
+    # Basic stats
+    total_products = db.query(Product).filter(Product.restaurant_id == current_user.restaurant_id).count()
+    
+    # Stock status counts
+    low_stock = db.query(Product).filter(
+        and_(Product.restaurant_id == current_user.restaurant_id,
+             Product.current_stock <= Product.min_stock)
+    ).count()
+    
+    # Total inventory value
+    total_value = db.query(func.sum(Product.current_stock * Product.cost_price)).filter(
+        Product.restaurant_id == current_user.restaurant_id
+    ).scalar() or Decimal('0.0')
+    
+    return {
+        "total_products": total_products,
+        "low_stock_products": low_stock,
+        "total_inventory_value": round(total_value, 2),
+        "stock_status": {
+            "low": low_stock,
+            "ok": total_products - low_stock
+        }
+    }
+
 @router.get("/{product_id}", response_model=ProductResponse)
 async def get_product(
     product_id: int,
@@ -243,56 +294,7 @@ async def delete_product(
     
     return {"message": "Product deleted successfully"}
 
-@router.get("/categories/list")
-async def get_categories(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Get all categories"""
-    categories = db.query(Category).filter(Category.is_active == True).all()
-    return [{"id": c.id, "name": c.name, "type": c.type, "icon": c.icon} for c in categories]
 
-@router.get("/providers/list")
-async def get_providers(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Get all providers"""
-    providers = db.query(Provider).filter(Provider.is_active == True).all()
-    return [{"id": p.id, "name": p.name, "contact_person": p.contact_person} for p in providers]
-
-@router.get("/stats")
-async def get_product_stats(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Get product statistics"""
-    if current_user.restaurant_id is None:
-        raise HTTPException(status_code=403, detail="User not assigned to restaurant")
-    
-    # Basic stats
-    total_products = db.query(Product).filter(Product.restaurant_id == current_user.restaurant_id).count()
-    
-    # Stock status counts
-    low_stock = db.query(Product).filter(
-        and_(Product.restaurant_id == current_user.restaurant_id,
-             Product.current_stock <= Product.min_stock)
-    ).count()
-    
-    # Total inventory value
-    total_value = db.query(func.sum(Product.current_stock * Product.cost_price)).filter(
-        Product.restaurant_id == current_user.restaurant_id
-    ).scalar() or Decimal('0.0')
-    
-    return {
-        "total_products": total_products,
-        "low_stock_products": low_stock,
-        "total_inventory_value": round(total_value, 2),
-        "stock_status": {
-            "low": low_stock,
-            "ok": total_products - low_stock
-        }
-    }
 
 # Helper function
 def get_product_response(product: Product, db: Session) -> ProductResponse:
