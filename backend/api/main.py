@@ -79,7 +79,20 @@ print(f"Buscando frontend en: {static_dir}")
 
 if static_dir.exists():
     print("Frontend encontrado. Montando estaticos...")
+    try:
+        print(f"Contenido de frontend: {os.listdir(static_dir)}")
+        if (static_dir / "js").exists():
+            print(f"Contenido de frontend/js: {os.listdir(static_dir / 'js')}")
+    except Exception as e:
+        print(f"Error listando archivos: {e}")
+
     app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+    
+    # Mount JS and other static assets for root-level HTML files
+    if (static_dir / "js").exists():
+        app.mount("/js", StaticFiles(directory=str(static_dir / "js")), name="js")
+    if (static_dir / "locales").exists():
+        app.mount("/locales", StaticFiles(directory=str(static_dir / "locales")), name="locales")
 else:
     print(f"ERROR CRITICO: No se encuentra la carpeta frontend en {static_dir}")
 
@@ -91,6 +104,42 @@ async def serve_app():
     if os.path.exists(index_path):
         return FileResponse(index_path)
     return {"message": "Enterprise Restaurant Inventory System API", "status": "running"}
+
+# Explicit routes for all HTML pages (production compatibility)
+@app.get("/dashboard.html")
+async def dashboard():
+    """Serve dashboard page"""
+    return FileResponse(os.path.join(static_dir, "dashboard.html"))
+
+@app.get("/admin.html")
+async def admin():
+    """Serve admin page"""
+    return FileResponse(os.path.join(static_dir, "admin.html"))
+
+@app.get("/count.html")
+async def count():
+    """Serve count page"""
+    return FileResponse(os.path.join(static_dir, "count.html"))
+
+@app.get("/inventory.html")
+async def inventory():
+    """Serve inventory page"""
+    return FileResponse(os.path.join(static_dir, "inventory.html"))
+
+@app.get("/ocr.html")
+async def ocr():
+    """Serve OCR page"""
+    return FileResponse(os.path.join(static_dir, "ocr.html"))
+
+@app.get("/reports.html")
+async def reports():
+    """Serve reports page"""
+    return FileResponse(os.path.join(static_dir, "reports.html"))
+
+@app.get("/waste.html")
+async def waste():
+    """Serve waste management page"""
+    return FileResponse(os.path.join(static_dir, "waste.html"))
 
 # Health check endpoint
 @app.get("/health")
