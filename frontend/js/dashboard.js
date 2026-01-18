@@ -38,7 +38,7 @@ class DashboardManager {
         try {
             // Show loading
             document.getElementById('loadingState').style.display = 'flex';
-            
+
             // Load all dashboard data in parallel
             const [
                 summary,
@@ -146,10 +146,10 @@ class DashboardManager {
         container.innerHTML = '';
 
         cards.forEach(card => {
-            const changeClass = card.change_type === 'increase' ? 'text-green-600' : 
-                               card.change_type === 'decrease' ? 'text-red-600' : 'text-gray-600';
-            const changeIcon = card.change_type === 'increase' ? 'fa-arrow-up' : 
-                              card.change_type === 'decrease' ? 'fa-arrow-down' : 'fa-minus';
+            const changeClass = card.change_type === 'increase' ? 'text-green-600' :
+                card.change_type === 'decrease' ? 'text-red-600' : 'text-gray-600';
+            const changeIcon = card.change_type === 'increase' ? 'fa-arrow-up' :
+                card.change_type === 'decrease' ? 'fa-arrow-down' : 'fa-minus';
 
             const cardElement = document.createElement('div');
             cardElement.className = 'stats-card bg-white rounded-xl shadow-sm p-6';
@@ -179,7 +179,7 @@ class DashboardManager {
     renderAlerts(alerts) {
         const container = document.getElementById('alertsList');
         const countElement = document.getElementById('alertCount');
-        
+
         container.innerHTML = '';
         countElement.textContent = alerts.length;
 
@@ -221,7 +221,7 @@ class DashboardManager {
 
     renderWeeklyConsumptionChart(data) {
         const ctx = document.getElementById('weeklyConsumptionChart').getContext('2d');
-        
+
         // Destroy existing chart
         if (this.charts.weeklyConsumption) {
             this.charts.weeklyConsumption.destroy();
@@ -253,7 +253,7 @@ class DashboardManager {
                     y: {
                         beginAtZero: true,
                         ticks: {
-                            callback: function(value) {
+                            callback: function (value) {
                                 return '$' + value.toLocaleString();
                             }
                         }
@@ -270,7 +270,7 @@ class DashboardManager {
 
     renderCategoryChart(data) {
         const ctx = document.getElementById('categoryChart').getContext('2d');
-        
+
         // Destroy existing chart
         if (this.charts.category) {
             this.charts.category.destroy();
@@ -436,6 +436,36 @@ class DashboardManager {
         setInterval(() => {
             this.loadDashboardData();
         }, 5 * 60 * 1000);
+    }
+
+    async filterByCategory() {
+        const select = document.getElementById('categoryFilter');
+        const category = select.value;
+
+        let endpoint = '/api/dashboard/top-products?limit=20';
+        if (category) {
+            endpoint = `/api/dashboard/products-by-category?category_name=${category}`;
+        }
+
+        try {
+            const data = await this.fetchData(endpoint);
+            const products = data.products || [];
+            this.renderTopProductsTable(products);
+        } catch (error) {
+            console.error('Error filtering:', error);
+        }
+    }
+
+    async printCategory() {
+        const select = document.getElementById('categoryFilter');
+        const category = select.value;
+
+        let url = '/reports.html';
+        if (category) {
+            url += `?category=${encodeURIComponent(category)}`;
+        }
+
+        window.open(url, '_blank');
     }
 }
 
