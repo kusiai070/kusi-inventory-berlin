@@ -207,7 +207,9 @@
                                 <i class="fas fa-ellipsis-v"></i>
                             </button>
                         </div>
-                        <canvas id="weeklyConsumptionChart" width="400" height="200"></canvas>
+                        <div style="position: relative; height: 300px; width: 100%;">
+                            <canvas id="weeklyConsumptionChart"></canvas>
+                        </div>
                     </div>
 
                     <!-- Category Distribution Chart -->
@@ -221,7 +223,9 @@
                                 <i class="fas fa-ellipsis-v"></i>
                             </button>
                         </div>
-                        <canvas id="categoryChart" width="400" height="200"></canvas>
+                        <div style="position: relative; height: 350px; width: 100%;">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
                     </div>
                 </div>
 
@@ -258,6 +262,22 @@
 
                 <!-- Top Products Table -->
                 <div class="bg-white rounded-xl shadow-sm p-6">
+                    <div class="mb-4 flex gap-4">
+                        <select id="categoryFilter" class="px-4 py-2 border rounded-lg"
+                            onchange="dashboardManager.filterByCategory()">
+                            <option value="">Todas las categorías</option>
+                            <option value="Limpieza">Limpieza</option>
+                            <option value="Alimentos">Alimentos</option>
+                            <option value="Bebidas">Bebidas</option>
+                            <option value="Condimentos">Condimentos</option>
+                        </select>
+
+                        <button onclick="dashboardManager.printCategory()"
+                            class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                            <i class="fas fa-print mr-2"></i>Imprimir
+                        </button>
+                    </div>
+
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-lg font-semibold text-gray-800">
                             <i class="fas fa-star text-yellow-500 mr-2"></i>
@@ -268,7 +288,7 @@
                             Ver todos <i class="fas fa-arrow-right ml-1"></i>
                         </button>
                     </div>
-                    <div class="overflow-x-auto">
+                    <div class="overflow-x-auto" style="max-height: 400px; overflow-y: auto; display: block;">
                         <table class="w-full">
                             <thead>
                                 <tr class="border-b border-gray-200">
@@ -301,8 +321,8 @@
                 return;
             }
 
-            // Load dashboard data
-            loadDashboardData();
+            // Load dashboard data - Removed as it's handled by DashboardManager init
+            // loadDashboardData();
 
             // Setup event listeners
             setupEventListeners();
@@ -327,7 +347,7 @@
             // Restaurant selector
             document.getElementById('restaurantSelector').addEventListener('change', function () {
                 // Handle restaurant change
-                loadDashboardData();
+                dashboardManager.loadDashboardData();
             });
 
             // Language selector

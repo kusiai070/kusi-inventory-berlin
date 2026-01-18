@@ -281,7 +281,9 @@ async def get_top_products(
             "name": product.name,
             "category": product.category.name if product.category else "Unknown",
             "value": round(float(value), 2),
-            "unit": unit
+            "unit": unit,
+            "current_stock": float(product.current_stock),
+            "min_stock": float(product.min_stock)
         })
     
     # Sort and limit
@@ -290,6 +292,43 @@ async def get_top_products(
     return {
         "metric": metric,
         "products": top_products
+    }
+
+@router.get("/products-by-category")
+async def get_products_by_category(
+    category_name: Optional[str] = Query(None),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get products filtered by category"""
+    
+    query = db.query(Product).join(
+        Category, Product.category_id == Category.id
+    ).filter(
+        Product.restaurant_id == current_user.restaurant_id
+    )
+    
+    if category_name:
+        query = query.filter(Category.name.ilike(f"%{category_name}%"))
+    
+    products = query.all()
+    
+    result = []
+    for p in products:
+        result.append({
+            "id": p.id,
+            "name": p.name,
+            "category": p.category.name if p.category else "Unknown",
+            "current_stock": float(p.current_stock),
+            "min_stock": float(p.min_stock),
+            "unit": p.unit,
+            "cost_price": float(p.cost_price)
+        })
+    
+    return {
+        "products": result,
+        "category_filter": category_name,
+        "total_count": len(result)
     }
 
 @router.get("/quick-actions")

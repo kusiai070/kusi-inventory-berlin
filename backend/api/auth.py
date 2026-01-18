@@ -18,7 +18,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from backend.models.database import User, Restaurant, SessionLocal
 from backend.config import settings
-from werkzeug.security import check_password_hash
+import bcrypt
 
 # Security
 security = HTTPBearer()
@@ -132,7 +132,7 @@ async def login(request: Request, login_data: LoginRequest, db: Session = Depend
         
         # Verify password
         print("Verifying password...")
-        is_valid = check_password_hash(user.hashed_password, login_data.password)
+        is_valid = bcrypt.checkpw(login_data.password.encode('utf-8'), user.hashed_password.encode('utf-8'))
         print(f"Password valid? {is_valid}")
         
         if not is_valid:
