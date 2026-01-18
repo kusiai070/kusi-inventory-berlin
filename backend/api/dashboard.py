@@ -347,7 +347,7 @@ async def get_quick_actions(
     last_week = datetime.utcnow() - timedelta(days=7)
     recent_count = db.query(PhysicalCount).filter(
         PhysicalCount.restaurant_id == current_user.restaurant_id,
-        PhysicalCount.created_at >= last_week
+        PhysicalCount.started_at >= last_week
     ).count()
     
     if recent_count == 0:
