@@ -15,7 +15,7 @@ from backend.models.enums import StockMovementType, WasteType
 from backend.api.products import router as products_router
 
 # Setup Test DB
-TEST_DB_URL = "sqlite:///./test_qa_inventory.db"
+TEST_DB_URL = os.getenv("TEST_DATABASE_URL", "sqlite:///./test_qa_inventory.db")
 engine = create_engine(TEST_DB_URL, connect_args={"check_same_thread": False})
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

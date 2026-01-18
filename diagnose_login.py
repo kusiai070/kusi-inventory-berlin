@@ -2,6 +2,7 @@ import requests
 import json
 import sys
 import time
+import os
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
@@ -16,7 +17,8 @@ http = requests.Session()
 http.mount("http://", adapter)
 http.mount("https://", adapter)
 
-url = "http://localhost:8000/api/auth/login"
+port = os.getenv("PORT", "8000")
+url = f"http://localhost:{port}/api/auth/login"
 payload = {
     "email": "admin@restauranteelsol.com",
     "password": "admin123"
