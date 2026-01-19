@@ -45,28 +45,42 @@ def create_tables():
     print("✅ Tablas recreadas")
 
 def create_admin():
-    """Crea usuario admin"""
+    """Crea restaurante y usuario admin"""
     db = SessionLocal()
     
-    # Hash password
+    # 1. CREAR RESTAURANTE
+    restaurant_result = db.execute(text("""
+        INSERT INTO restaurants (name, address, email, is_active)
+        VALUES (:name, :address, :email, true)
+        RETURNING id
+    """), {
+        "name": "Restaurante El Sol - Berlín",
+        "address": "Berlín, Alemania",
+        "email": "admin@RestauranteElSol.com"
+    })
+    restaurant_id = restaurant_result.fetchone()[0]
+    db.commit()
+    
+    # 2. CREAR ADMIN con restaurant_id
     password = "admin123"
     hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
     hashed_str = hashed.decode('utf-8')
     
-    # Insertar admin
     db.execute(text("""
-        INSERT INTO users (email, hashed_password, full_name, role, is_active)
-        VALUES (:email, :pwd, :name, :role, true)
+        INSERT INTO users (email, hashed_password, full_name, role, is_active, restaurant_id)
+        VALUES (:email, :pwd, :name, :role, true, :restaurant_id)
     """), {
         "email": "admin@RestauranteElSol.com",
         "pwd": hashed_str,
         "name": "Administrador",
-        "role": "admin"
+        "role": "admin",
+        "restaurant_id": restaurant_id
     })
     
     db.commit()
     db.close()
-    print("✅ Admin creado: admin@RestauranteElSol.com / admin123")
+    print(f"✅ Restaurante creado: ID {restaurant_id}")
+    print("✅ Admin creado y asignado al restaurante")
 
 if __name__ == "__main__":
     print("⚠️  RESET COMPLETO DE NEON DB")
