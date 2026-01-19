@@ -17,7 +17,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from backend.models.database import (
     Product, StockMovement, Invoice, WasteLog, Alert, 
-    PhysicalCount, User, Category
+    PhysicalCount, User, Category, get_db
 )
 from backend.models.enums import StockMovementType, InvoiceStatus
 from backend.api.auth import get_current_user, SessionLocal
@@ -25,14 +25,6 @@ from backend.utils.calculations import ReportCalculator
 
 # Router
 router = APIRouter()
-
-# Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @router.get("/summary")
 async def get_dashboard_summary(

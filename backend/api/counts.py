@@ -16,7 +16,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from backend.models.database import (
-    PhysicalCount, PhysicalCountItem, Product, User, StockMovement
+    PhysicalCount, PhysicalCountItem, Product, User, StockMovement, get_db
 )
 from backend.models.enums import CountType, CountStatus, StockMovementType
 from backend.api.auth import get_current_user, SessionLocal
@@ -59,14 +59,6 @@ class CountResponse(BaseModel):
     completed_at: Optional[str]
     item_count: int
     total_variance: Decimal
-
-# Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @router.post("/start", response_model=dict)
 async def start_physical_count(
