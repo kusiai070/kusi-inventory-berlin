@@ -21,20 +21,12 @@ SessionLocal = sessionmaker(bind=engine)
 def reset_database():
     """Borra todas las tablas y las recrea"""
     with engine.connect() as conn:
-        # Listar todas las tablas
-        result = conn.execute(text("""
-            SELECT tablename FROM pg_tables 
-            WHERE schemaname = 'public'
-        """))
+        result = conn.execute(text("SELECT tablename FROM pg_tables WHERE schemaname = 'public'"))
         tables = [row[0] for row in result]
-        
         print(f"📋 Tablas encontradas: {tables}")
-        
-        # Borrar todas las tablas
         for table in tables:
             print(f"🗑️  Borrando tabla: {table}")
             conn.execute(text(f"DROP TABLE IF EXISTS {table} CASCADE"))
-        
         conn.commit()
         print("✅ Todas las tablas borradas")
 
@@ -48,9 +40,9 @@ def create_admin():
     """Crea restaurante y usuario admin"""
     db = SessionLocal()
     
-    # 1. CREAR RESTAURANTE
+    # 1. CREAR RESTAURANTE (Corrected INSERT)
     restaurant_result = db.execute(text("""
-        INSERT INTO restaurants (name, address, contact_email, is_active)
+        INSERT INTO restaurants (name, address, email, is_active)
         VALUES (:name, :address, :email, true)
         RETURNING id
     """), {
@@ -82,7 +74,7 @@ def create_admin():
     print(f"✅ Restaurante creado: ID {restaurant_id}")
     print("✅ Admin creado y asignado al restaurante")
 
-def seed_initial_data():
+def seed_initial_data(): # Keep this function
     """Inserta categorías y proveedores iniciales"""
     db = SessionLocal()
     
@@ -130,7 +122,6 @@ def seed_initial_data():
     db.close()
     print(f"✅ {len(providers)} proveedores creados")
 
-
 if __name__ == "__main__":
     print("⚠️  RESET COMPLETO DE NEON DB")
     print("⚠️  Se borrarán TODOS los datos")
@@ -139,7 +130,7 @@ if __name__ == "__main__":
     if confirm == "SI":
         reset_database()
         create_tables()
-        seed_initial_data()
+        seed_initial_data() # Keep this call
         create_admin()
         print("🎉 Base de datos reseteada - Lista para Berlín")
     else:
