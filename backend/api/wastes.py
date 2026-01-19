@@ -45,14 +45,6 @@ class WasteResponse(BaseModel):
     user_name: str
     created_at: str
 
-# Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
 @router.post("/", response_model=dict)
 async def create_waste_log(
     waste: WasteCreate,

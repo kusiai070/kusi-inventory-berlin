@@ -70,14 +70,6 @@ class ProductResponse(BaseModel):
     created_at: str
     updated_at: Optional[str]
 
-# Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
 @router.post("/", response_model=ProductResponse)
 async def create_product(
     product: ProductCreate, 

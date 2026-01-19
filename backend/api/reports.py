@@ -26,14 +26,6 @@ from fastapi.responses import StreamingResponse
 # Router
 router = APIRouter()
 
-# Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
 @router.get("/inventory-valuation")
 async def get_inventory_valuation_report(
     format: str = Query("json", regex="^(json|excel|pdf)$"),

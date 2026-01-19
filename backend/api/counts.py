@@ -60,14 +60,6 @@ class CountResponse(BaseModel):
     item_count: int
     total_variance: Decimal
 
-# Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
 @router.post("/start", response_model=dict)
 async def start_physical_count(
     count_type: CountType,

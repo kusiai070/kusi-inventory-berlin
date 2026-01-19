@@ -16,14 +16,6 @@ from backend.api.auth import get_current_user, SessionLocal
 # Router
 router = APIRouter()
 
-# Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
 # Schemas
 class RestaurantCreate(BaseModel):
     name: str

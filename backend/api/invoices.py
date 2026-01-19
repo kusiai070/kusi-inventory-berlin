@@ -68,14 +68,6 @@ class OCRResult(BaseModel):
     raw_text: str
     suggestions: List[dict]
 
-# Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
 @router.post("/ocr/process", response_model=OCRResult)
 async def process_invoice_with_ocr(
     file: UploadFile = File(...),
