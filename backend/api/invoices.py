@@ -16,7 +16,9 @@ import json
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from backend.models.database import Invoice, InvoiceItem, Product, Provider, User, StockMovement
+from backend.models.database import (
+    Invoice, InvoiceItem, Product, Provider, User, StockMovement, get_db
+)
 from backend.models.enums import InvoiceStatus, StockMovementType
 from backend.api.auth import get_current_user, SessionLocal
 from backend.utils.ocr_parser import OCRParser
@@ -67,14 +69,6 @@ class OCRResult(BaseModel):
     confidence: float
     raw_text: str
     suggestions: List[dict]
-
-# Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @router.post("/ocr/process", response_model=OCRResult)
 async def process_invoice_with_ocr(

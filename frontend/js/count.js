@@ -62,7 +62,7 @@ class CountManager {
     populateCategorySelect() {
         const select = document.getElementById('categoryId');
         select.innerHTML = '<option value="">Seleccionar categoría</option>';
-        
+
         this.categories.forEach(category => {
             const option = document.createElement('option');
             option.value = category.id;
@@ -84,7 +84,7 @@ class CountManager {
         try {
             const response = await authManager.authenticatedFetch('/api/counts/current');
             const data = await response.json();
-            
+
             if (data.count) {
                 this.currentCount = data.count;
                 this.countItems = data.items || [];
@@ -107,15 +107,11 @@ class CountManager {
         try {
             const hideLoading = Utils.showLoading('Iniciando conteo...');
 
-            const response = await authManager.authenticatedFetch('/api/counts/start', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    count_type: countType,
-                    category_id: categoryId || null
-                })
+            // Build URL with query parameters
+            const url = `/api/counts/start?count_type=${countType}${categoryId ? `&category_id=${categoryId}` : ''}`;
+
+            const response = await authManager.authenticatedFetch(url, {
+                method: 'POST'
             });
 
             hideLoading();
@@ -128,7 +124,7 @@ class CountManager {
                     started_at: new Date().toISOString()
                 };
                 this.countItems = result.items || [];
-                
+
                 Utils.showNotification('Conteo iniciado exitosamente', 'success');
                 this.showActiveCount();
             } else {
@@ -172,10 +168,10 @@ class CountManager {
         this.countItems.forEach((item, index) => {
             const difference = item.physical_count - item.system_stock;
             const differenceClass = difference > 0 ? 'difference-positive' : difference < 0 ? 'difference-negative' : '';
-            
+
             const row = document.createElement('tr');
             row.className = 'border-b border-gray-100 hover:bg-gray-50';
-            
+
             row.innerHTML = `
                 <td class="py-3 px-4">
                     <div class="font-medium text-gray-900">${item.product_name}</div>
@@ -208,7 +204,7 @@ class CountManager {
         const physicalCount = parseFloat(value) || 0;
         this.countItems[index].physical_count = physicalCount;
         this.countItems[index].difference = physicalCount - this.countItems[index].system_stock;
-        
+
         this.renderCountItems();
         this.updateSummary();
     }
@@ -246,7 +242,7 @@ class CountManager {
 
     async savePartial() {
         const itemsToSave = this.countItems.filter(item => item.physical_count > 0);
-        
+
         if (itemsToSave.length === 0) {
             Utils.showNotification('No hay items para guardar', 'warning');
             return;
@@ -285,13 +281,13 @@ class CountManager {
 
     async finalizeCount() {
         const counted = this.countItems.filter(item => item.physical_count > 0).length;
-        
+
         if (counted < this.countItems.length) {
             const confirmed = await this.showConfirmDialog(
                 'Finalizar Conteo',
                 `Aún faltan ${this.countItems.length - counted} productos por contar. ¿Desea finalizar de todas formas?`
             );
-            
+
             if (!confirmed) return;
         }
 
@@ -318,7 +314,7 @@ class CountManager {
             if (response.ok) {
                 const result = await response.json();
                 Utils.showNotification(`Conteo finalizado: ${result.adjustments_made} ajustes aplicados`, 'success');
-                
+
                 // Reset to start state
                 this.resetToStart();
             } else {
@@ -334,7 +330,7 @@ class CountManager {
     resetToStart() {
         this.currentCount = null;
         this.countItems = [];
-        
+
         document.getElementById('startSection').style.display = 'block';
         document.getElementById('activeCountSection').style.display = 'none';
         document.getElementById('countItemsSection').style.display = 'none';
@@ -345,7 +341,7 @@ class CountManager {
     async exportToExcel() {
         try {
             const hideLoading = Utils.showLoading('Exportando a Excel...');
-            
+
             // Create CSV content
             const headers = ['Producto', 'Unidad', 'Stock Sistema', 'Conteo Real', 'Diferencia', 'Estado'];
             const csvContent = [
@@ -380,11 +376,11 @@ class CountManager {
         try {
             const response = await authManager.authenticatedFetch('/api/counts/history?limit=20');
             const history = await response.json();
-            
+
             // Show history modal or navigate to history page
             console.log('Count history:', history);
             Utils.showNotification('Historial cargado en consola', 'info');
-            
+
         } catch (error) {
             console.error('Error loading history:', error);
             Utils.showNotification('Error al cargar historial', 'error');
@@ -400,7 +396,7 @@ class CountManager {
 }
 
 // Initialize count manager when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     if (typeof authManager !== 'undefined' && authManager.isAuthenticated()) {
         window.countManager = new CountManager();
     }
