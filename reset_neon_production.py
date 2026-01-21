@@ -75,7 +75,7 @@ def create_admin():
     print("✅ Admin creado y asignado al restaurante")
 
 def seed_initial_data():
-    """Inserta categorías y proveedores iniciales"""
+    """Inserta categorías iniciales"""
     db = SessionLocal()
     
     # CATEGORÍAS
@@ -100,29 +100,8 @@ def seed_initial_data():
         """), {"name": name, "desc": desc, "type": cat_type, "icon": icon})
     
     db.commit()
-    print(f"✅ {len(categories)} categorías creadas")
-    
-    # PROVEEDORES
-    providers = [
-        ('Distribuidora Central', 'Juan Pérez', '555-0101', 'juan@central.com', 'Av. Principal 123', '123456789'),
-        ('Productores Frescos S.A.', 'María García', '555-0202', 'maria@frescos.com', 'Calle Mercado 456', '987654321'),
-        ('Bebidas Premium', 'Carlos López', '555-0303', 'carlos@premium.com', 'Zona Industrial Norte', '456789123'),
-        ('Limpieza Express', 'Ana Martínez', '555-0404', 'ana@express.com', 'Centro Comercial Sur', '789123456')
-    ]
-    
-    print(f"🌱 Creando {len(providers)} proveedores...")
-    for name, contact, phone, email, address, tax_id in providers:
-        db.execute(text("""
-            INSERT INTO providers (name, contact_person, phone, email, address, tax_id, is_active)
-            VALUES (:name, :contact, :phone, :email, :address, :tax_id, true)
-        """), {
-            "name": name, "contact": contact, "phone": phone,
-            "email": email, "address": address, "tax_id": tax_id
-        })
-    
-    db.commit()
     db.close()
-    print(f"✅ {len(providers)} proveedores creados")
+    print(f"✅ {len(categories)} categorías creadas")
 
 if __name__ == "__main__":
     print("⚠️  RESET COMPLETO DE NEON DB")
