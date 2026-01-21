@@ -23,7 +23,7 @@ class InventoryManager {
 
     setupEventListeners() {
         // Search and filters
-        document.getElementById('searchInput').addEventListener('input', 
+        document.getElementById('searchInput').addEventListener('input',
             Utils.debounce(() => this.applyFilters(), 300));
         document.getElementById('categoryFilter').addEventListener('change', () => this.applyFilters());
         document.getElementById('stockFilter').addEventListener('change', () => this.applyFilters());
@@ -42,6 +42,12 @@ class InventoryManager {
         document.getElementById('closeModal').addEventListener('click', () => this.closeModal());
         document.getElementById('cancelBtn').addEventListener('click', () => this.closeModal());
         document.getElementById('productForm').addEventListener('submit', (e) => this.handleSubmit(e));
+
+        // Provider Modal
+        document.getElementById('addProviderBtn').addEventListener('click', () => this.openProviderModal());
+        document.getElementById('closeProviderModal').addEventListener('click', () => this.closeProviderModal());
+        document.getElementById('cancelProviderBtn').addEventListener('click', () => this.closeProviderModal());
+        document.getElementById('providerForm').addEventListener('submit', (e) => this.handleProviderSubmit(e));
 
         // Export
         document.getElementById('exportBtn').addEventListener('click', () => this.exportProducts());
@@ -66,7 +72,7 @@ class InventoryManager {
 
             this.populateSelects();
             this.applyFilters();
-            
+
         } catch (error) {
             console.error('Error loading initial data:', error);
             Utils.showNotification('Error al cargar datos iniciales', 'error');
@@ -129,10 +135,10 @@ class InventoryManager {
         // Category select
         const categorySelect = document.getElementById('productCategory');
         const categoryFilter = document.getElementById('categoryFilter');
-        
+
         categorySelect.innerHTML = '<option value="">Seleccionar categoría</option>';
         categoryFilter.innerHTML = '<option value="">Todas las categorías</option>';
-        
+
         this.categories.forEach(category => {
             const option1 = document.createElement('option');
             option1.value = category.id;
@@ -148,7 +154,7 @@ class InventoryManager {
         // Provider select
         const providerSelect = document.getElementById('productProvider');
         providerSelect.innerHTML = '<option value="">Seleccionar proveedor</option>';
-        
+
         this.providers.forEach(provider => {
             const option = document.createElement('option');
             option.value = provider.id;
@@ -205,7 +211,7 @@ class InventoryManager {
 
         this.filteredProducts = this.products.filter(product => {
             // Search filter
-            if (search && !product.name.toLowerCase().includes(search) && 
+            if (search && !product.name.toLowerCase().includes(search) &&
                 !product.description?.toLowerCase().includes(search) &&
                 !product.barcode?.toLowerCase().includes(search)) {
                 return false;
@@ -244,13 +250,13 @@ class InventoryManager {
 
     setView(view) {
         this.currentView = view;
-        
+
         // Update buttons
-        document.getElementById('gridView').className = view === 'grid' ? 
+        document.getElementById('gridView').className = view === 'grid' ?
             'px-3 py-2 bg-blue-600 text-white rounded-l-lg' :
             'px-3 py-2 text-gray-600 rounded-l-lg hover:bg-gray-50';
-        
-        document.getElementById('listView').className = view === 'list' ? 
+
+        document.getElementById('listView').className = view === 'list' ?
             'px-3 py-2 bg-blue-600 text-white rounded-r-lg' :
             'px-3 py-2 text-gray-600 rounded-r-lg hover:bg-gray-50';
 
@@ -282,7 +288,7 @@ class InventoryManager {
             const stockStatus = this.getStockStatus(product);
             const card = document.createElement('div');
             card.className = `product-card bg-white rounded-xl shadow-sm p-6 border-l-4 ${stockStatus.class}`;
-            
+
             card.innerHTML = `
                 <div class="flex items-start justify-between mb-4">
                     <div class="flex-1">
@@ -358,12 +364,12 @@ class InventoryManager {
         `;
 
         const tbody = table.querySelector('#listTableBody');
-        
+
         products.forEach(product => {
             const stockStatus = this.getStockStatus(product);
             const row = document.createElement('tr');
             row.className = 'border-b border-gray-100 hover:bg-gray-50';
-            
+
             row.innerHTML = `
                 <td class="py-3 px-4">
                     <div class="font-medium text-gray-900">${product.name}</div>
@@ -582,7 +588,7 @@ class InventoryManager {
                     this.currentEditingId ? 'Producto actualizado exitosamente' : 'Producto creado exitosamente',
                     'success'
                 );
-                
+
                 this.closeModal();
                 await this.loadProducts();
                 this.applyFilters();
@@ -658,7 +664,7 @@ class InventoryManager {
 
         try {
             const hideLoading = Utils.showLoading('Eliminando producto...');
-            
+
             const response = await authManager.authenticatedFetch(`/api/products/${productId}`, {
                 method: 'DELETE'
             });
@@ -683,7 +689,7 @@ class InventoryManager {
     async exportProducts() {
         try {
             const hideLoading = Utils.showLoading('Exportando productos...');
-            
+
             const response = await authManager.authenticatedFetch('/api/products?limit=1000');
             const products = await response.json();
 
@@ -716,6 +722,59 @@ class InventoryManager {
         }
     }
 
+    openProviderModal() {
+        document.getElementById('providerModal').classList.add('active');
+        document.getElementById('providerForm').reset();
+    }
+
+    closeProviderModal() {
+        document.getElementById('providerModal').classList.remove('active');
+        document.getElementById('providerForm').reset();
+    }
+
+    async handleProviderSubmit(e) {
+        e.preventDefault();
+
+        const formData = {
+            name: document.getElementById('provName').value,
+            contact_person: document.getElementById('provContact').value,
+            phone: document.getElementById('provPhone').value,
+            email: document.getElementById('provEmail').value,
+            address: document.getElementById('provAddress').value || null,
+            tax_id: document.getElementById('provTaxId').value || null
+        };
+
+        try {
+            const hideLoading = Utils.showLoading('Guardando proveedor...');
+
+            const response = await authManager.authenticatedFetch('/api/products/providers', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+
+            hideLoading();
+
+            if (response.ok) {
+                Utils.showNotification('Proveedor creado exitosamente', 'success');
+                this.closeProviderModal();
+
+                // Refresh providers list
+                await this.loadProviders();
+                this.populateSelects();
+
+            } else {
+                const error = await response.json();
+                Utils.showNotification(error.detail || 'Error al crear proveedor', 'error');
+            }
+        } catch (error) {
+            console.error('Error creating provider:', error);
+            Utils.showNotification('Error de conexión', 'error');
+        }
+    }
+
     showConfirmDialog(title, message) {
         return new Promise((resolve) => {
             const confirmed = confirm(`${title}\n\n${message}`);
@@ -725,7 +784,7 @@ class InventoryManager {
 }
 
 // Initialize inventory manager when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     if (typeof authManager !== 'undefined' && authManager.isAuthenticated()) {
         window.inventoryManager = new InventoryManager();
     }
