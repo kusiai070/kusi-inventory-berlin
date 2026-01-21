@@ -21,20 +21,12 @@ SessionLocal = sessionmaker(bind=engine)
 def reset_database():
     """Borra todas las tablas y las recrea"""
     with engine.connect() as conn:
-        # Listar todas las tablas
-        result = conn.execute(text("""
-            SELECT tablename FROM pg_tables 
-            WHERE schemaname = 'public'
-        """))
+        result = conn.execute(text("SELECT tablename FROM pg_tables WHERE schemaname = 'public'"))
         tables = [row[0] for row in result]
-        
         print(f"📋 Tablas encontradas: {tables}")
-        
-        # Borrar todas las tablas
         for table in tables:
             print(f"🗑️  Borrando tabla: {table}")
             conn.execute(text(f"DROP TABLE IF EXISTS {table} CASCADE"))
-        
         conn.commit()
         print("✅ Todas las tablas borradas")
 
@@ -48,7 +40,7 @@ def create_admin():
     """Crea restaurante y usuario admin"""
     db = SessionLocal()
     
-    # 1. CREAR RESTAURANTE
+    # 1. CREAR RESTAURANTE (Corrected INSERT)
     restaurant_result = db.execute(text("""
         INSERT INTO restaurants (name, address, email, is_active)
         VALUES (:name, :address, :email, true)
@@ -83,25 +75,24 @@ def create_admin():
     print("✅ Admin creado y asignado al restaurante")
 
 def seed_initial_data():
-    """Inserta categorías iniciales"""
+    """Inserta categorías y proveedores iniciales"""
     db = SessionLocal()
     
-    # CATEGORÍAS (10 Básicas)
+    # CATEGORÍAS
     categories = [
-        ('Carnes', 'Carnes y proteínas', 'food', '🥩'),
-        ('Lácteos', 'Leche, quesos y derivados', 'food', '🥛'),
-        ('Verduras', 'Vegetales y frutas', 'food', '🥬'),
-        ('Panadería', 'Panes y harinas', 'food', '🍞'),
-        ('Granos', 'Arroz, menestras y cereales', 'food', '🌾'),
+        ('Carnes y Pescados', 'Productos cárnicos y mariscos frescos', 'food', '🥩'),
+        ('Lácteos y Huevos', 'Productos lácteos y huevos', 'food', '🥛'),
+        ('Verduras y Frutas', 'Productos frescos de temporada', 'food', '🥬'),
+        ('Panadería', 'Productos de panadería y repostería', 'food', '🍞'),
+        ('Granos y Cereales', 'Arroz, legumbres, cereales', 'food', '🌾'),
         ('Bebidas Alcohólicas', 'Cervezas, vinos y licores', 'beverage', '🍺'),
-        ('Bebidas Sin Alcohol', 'Agua, gaseosas y jugos', 'beverage', '🥤'),
-        ('Limpieza', 'Detergentes y aseo', 'cleaning', '🧽'),
-        ('Utensilios', 'Cubiertos y vajilla', 'reusable', '🍽️'),
-        ('Condimentos', 'Especias y aderezos', 'food', '🧂')
+        ('Bebidas Sin Alcohol', 'Refrescos, jugos y aguas', 'beverage', '🥤'),
+        ('Suministros de Limpieza', 'Productos de limpieza e higiene', 'cleaning', '🧽'),
+        ('Utensilios y Desechables', 'Utensilios, platos y productos desechables', 'cleaning', '🍽️'),
+        ('Condimentos y Salsas', 'Especias, condimentos y salsas', 'food', '🧂')
     ]
     
     print(f"🌱 Creando {len(categories)} categorías...")
-    
     for name, desc, cat_type, icon in categories:
         db.execute(text("""
             INSERT INTO categories (name, description, type, icon, is_active)
@@ -109,9 +100,29 @@ def seed_initial_data():
         """), {"name": name, "desc": desc, "type": cat_type, "icon": icon})
     
     db.commit()
+    print(f"✅ {len(categories)} categorías creadas")
+    
+    # PROVEEDORES
+    providers = [
+        ('Distribuidora Central', 'Juan Pérez', '555-0101', 'juan@central.com', 'Av. Principal 123', '123456789'),
+        ('Productores Frescos S.A.', 'María García', '555-0202', 'maria@frescos.com', 'Calle Mercado 456', '987654321'),
+        ('Bebidas Premium', 'Carlos López', '555-0303', 'carlos@premium.com', 'Zona Industrial Norte', '456789123'),
+        ('Limpieza Express', 'Ana Martínez', '555-0404', 'ana@express.com', 'Centro Comercial Sur', '789123456')
+    ]
+    
+    print(f"🌱 Creando {len(providers)} proveedores...")
+    for name, contact, phone, email, address, tax_id in providers:
+        db.execute(text("""
+            INSERT INTO providers (name, contact_person, phone, email, address, tax_id, is_active)
+            VALUES (:name, :contact, :phone, :email, :address, :tax_id, true)
+        """), {
+            "name": name, "contact": contact, "phone": phone,
+            "email": email, "address": address, "tax_id": tax_id
+        })
+    
+    db.commit()
     db.close()
-    print(f"✅ Categorías creadas correctamente (Sin proveedores)")
-
+    print(f"✅ {len(providers)} proveedores creados")
 
 if __name__ == "__main__":
     print("⚠️  RESET COMPLETO DE NEON DB")
