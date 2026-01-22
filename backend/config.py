@@ -29,7 +29,7 @@ class Settings:
     FRONTEND_PORT: str = os.getenv("FRONTEND_PORT", "3000")
     ALLOWED_ORIGINS: List[str] = os.getenv(
         "ALLOWED_ORIGINS",
-        f"http://localhost:{PORT},http://localhost:{FRONTEND_PORT}"
+        f"http://localhost:{PORT},http://localhost:{FRONTEND_PORT},https://restaurant-inventory-enterprise.onrender.com"
     ).split(",")
     
     # OCR Settings

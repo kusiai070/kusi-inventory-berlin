@@ -26,8 +26,6 @@ SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = settings.ALGORITHM
 ACCESS_TOKEN_EXPIRE_HOURS = settings.ACCESS_TOKEN_EXPIRE_HOURS
 
-from backend.models.database import User, Restaurant, SessionLocal, get_db
-
 # Pydantic models
 class LoginRequest(BaseModel):
     email: str
