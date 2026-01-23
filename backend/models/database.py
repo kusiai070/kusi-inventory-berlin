@@ -13,8 +13,33 @@ from backend.models.enums import StockMovementType, WasteType, CountType, CountS
 from backend.config import settings
 
 # Database Configuration
-engine = create_engine(settings.DATABASE_URL)
+# Configurar SSL para PostgreSQL/Neon
+connect_args = {}
+if settings.DATABASE_URL and "postgresql" in settings.DATABASE_URL:
+    connect_args = {
+        "sslmode": "require",
+        "connect_timeout": 10
+    }
+
+# Crear engine con configuración SSL
+engine = create_engine(
+    settings.DATABASE_URL,
+    connect_args=connect_args,
+    pool_pre_ping=True,
+    pool_recycle=300,
+    pool_size=5,
+    max_overflow=10
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
 
 Base = declarative_base()
 
@@ -105,6 +130,14 @@ class Product(Base):
     
     # Unidad de medida
     unit = Column(String(20), nullable=False)  # kg, lit, unit, package
+    
+    # Variant fields (Excel-style flexible fields)
+    brand = Column(String(100))
+    variant_type = Column(String(100))
+    size = Column(String(50))
+    presentation = Column(String(100))
+    origin = Column(String(100))
+    notes = Column(Text)
     
     # Stock levels
     # Stock levels

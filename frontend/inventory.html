@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,45 +13,57 @@
             font-family: 'Inter', sans-serif;
             background-color: #f8fafc;
         }
+
         .sidebar {
             background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
             min-height: 100vh;
         }
+
         .nav-item {
             transition: all 0.3s ease;
         }
+
         .nav-item:hover {
             background: rgba(255, 255, 255, 0.1);
             transform: translateX(5px);
         }
+
         .nav-item.active {
             background: rgba(255, 255, 255, 0.2);
             border-left: 4px solid #3498db;
         }
+
         .product-card {
             transition: all 0.3s ease;
         }
+
         .product-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
         }
+
         .stock-low {
             border-left: 4px solid #ef4444;
         }
+
         .stock-medium {
             border-left: 4px solid #f59e0b;
         }
+
         .stock-ok {
             border-left: 4px solid #10b981;
         }
+
         .modal {
             display: none;
         }
+
         .modal.active {
             display: flex;
         }
     </style>
 </head>
+
 <body>
     <div class="flex">
         <!-- Sidebar -->
@@ -65,41 +78,47 @@
                     </div>
                 </div>
             </div>
-            
+
             <nav class="mt-6">
                 <div class="px-4">
-                    <div class="nav-item flex items-center px-4 py-3 text-gray-300 rounded-lg mb-2 cursor-pointer" onclick="navigateTo('dashboard')">
+                    <div class="nav-item flex items-center px-4 py-3 text-gray-300 rounded-lg mb-2 cursor-pointer"
+                        onclick="navigateTo('dashboard')">
                         <i class="fas fa-chart-pie w-6"></i>
                         <span class="ml-3">Dashboard</span>
                     </div>
-                    
-                    <div class="nav-item active flex items-center px-4 py-3 text-white rounded-lg mb-2 cursor-pointer" onclick="navigateTo('inventory')">
+
+                    <div class="nav-item active flex items-center px-4 py-3 text-white rounded-lg mb-2 cursor-pointer"
+                        onclick="navigateTo('inventory')">
                         <i class="fas fa-boxes w-6"></i>
                         <span class="ml-3">Inventario</span>
                     </div>
-                    
-                    <div class="nav-item flex items-center px-4 py-3 text-gray-300 rounded-lg mb-2 cursor-pointer" onclick="navigateTo('ocr')">
+
+                    <div class="nav-item flex items-center px-4 py-3 text-gray-300 rounded-lg mb-2 cursor-pointer"
+                        onclick="navigateTo('ocr')">
                         <i class="fas fa-camera w-6"></i>
                         <span class="ml-3">Facturas OCR</span>
                     </div>
-                    
-                    <div class="nav-item flex items-center px-4 py-3 text-gray-300 rounded-lg mb-2 cursor-pointer" onclick="navigateTo('count')">
+
+                    <div class="nav-item flex items-center px-4 py-3 text-gray-300 rounded-lg mb-2 cursor-pointer"
+                        onclick="navigateTo('count')">
                         <i class="fas fa-clipboard-check w-6"></i>
                         <span class="ml-3">Conteo Físico</span>
                     </div>
-                    
-                    <div class="nav-item flex items-center px-4 py-3 text-gray-300 rounded-lg mb-2 cursor-pointer" onclick="navigateTo('reports')">
+
+                    <div class="nav-item flex items-center px-4 py-3 text-gray-300 rounded-lg mb-2 cursor-pointer"
+                        onclick="navigateTo('reports')">
                         <i class="fas fa-chart-bar w-6"></i>
                         <span class="ml-3">Reportes</span>
                     </div>
-                    
-                    <div class="nav-item flex items-center px-4 py-3 text-gray-300 rounded-lg mb-2 cursor-pointer" onclick="navigateTo('waste')">
+
+                    <div class="nav-item flex items-center px-4 py-3 text-gray-300 rounded-lg mb-2 cursor-pointer"
+                        onclick="navigateTo('waste')">
                         <i class="fas fa-trash-alt w-6"></i>
                         <span class="ml-3">Mermas</span>
                     </div>
                 </div>
             </nav>
-            
+
             <!-- User Info -->
             <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-600">
                 <div class="flex items-center">
@@ -127,12 +146,18 @@
                             <h1 class="text-2xl font-bold text-gray-800">Gestión de Inventario</h1>
                             <p class="text-gray-600">Administra los productos de tu restaurante</p>
                         </div>
-                        
+
                         <div class="flex items-center space-x-4">
-                            <button id="exportBtn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                            <button id="addProviderBtn"
+                                class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                                <i class="fas fa-user-plus mr-2"></i>Nuevo Proveedor
+                            </button>
+                            <button id="exportBtn"
+                                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
                                 <i class="fas fa-download mr-2"></i>Exportar
                             </button>
-                            <button id="addProductBtn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            <button id="addProductBtn"
+                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
                                 <i class="fas fa-plus mr-2"></i>Nuevo Producto
                             </button>
                         </div>
@@ -147,27 +172,31 @@
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Buscar</label>
-                            <input type="text" id="searchInput" placeholder="Nombre, código..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <input type="text" id="searchInput" placeholder="Nombre, código..."
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Categoría</label>
-                            <select id="categoryFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <select id="categoryFilter"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                 <option value="">Todas las categorías</option>
                             </select>
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Estado Stock</label>
-                            <select id="stockFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <select id="stockFilter"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                 <option value="">Todos</option>
                                 <option value="low">Stock Bajo</option>
                                 <option value="ok">Stock Normal</option>
                             </select>
                         </div>
-                        
+
                         <div class="flex items-end">
-                            <button id="clearFilters" class="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
+                            <button id="clearFilters"
+                                class="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
                                 <i class="fas fa-times mr-2"></i>Limpiar
                             </button>
                         </div>
@@ -207,16 +236,19 @@
                     <!-- Pagination -->
                     <div id="pagination" class="flex items-center justify-between mt-8">
                         <div class="text-sm text-gray-600">
-                            Mostrando <span id="showingStart">0</span>-<span id="showingEnd">0</span> de <span id="totalProducts">0</span> productos
+                            Mostrando <span id="showingStart">0</span>-<span id="showingEnd">0</span> de <span
+                                id="totalProducts">0</span> productos
                         </div>
                         <div class="flex space-x-2">
-                            <button id="prevPage" class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50">
+                            <button id="prevPage"
+                                class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50">
                                 <i class="fas fa-chevron-left"></i>
                             </button>
                             <div id="pageNumbers" class="flex space-x-1">
                                 <!-- Page numbers will be generated here -->
                             </div>
-                            <button id="nextPage" class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50">
+                            <button id="nextPage"
+                                class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50">
                                 <i class="fas fa-chevron-right"></i>
                             </button>
                         </div>
@@ -243,30 +275,35 @@
                     <!-- Basic Info -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Nombre *</label>
-                        <input type="text" id="productName" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <input type="text" id="productName" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Código de Barras</label>
-                        <input type="text" id="productBarcode" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <input type="text" id="productBarcode"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     </div>
 
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
-                        <textarea id="productDescription" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                        <textarea id="productDescription" rows="3"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
                     </div>
 
                     <!-- Category and Provider -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Categoría *</label>
-                        <select id="productCategory" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <select id="productCategory" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="">Seleccionar categoría</option>
                         </select>
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Proveedor *</label>
-                        <select id="productProvider" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <select id="productProvider" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="">Seleccionar proveedor</option>
                         </select>
                     </div>
@@ -274,7 +311,8 @@
                     <!-- Stock Levels -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Unidad *</label>
-                        <select id="productUnit" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <select id="productUnit" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="">Seleccionar unidad</option>
                             <option value="kg">Kilogramos (kg)</option>
                             <option value="lit">Litros (lit)</option>
@@ -285,39 +323,137 @@
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Stock Actual *</label>
-                        <input type="number" id="productCurrentStock" step="0.01" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <input type="number" id="productCurrentStock" step="0.01" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Stock Mínimo</label>
-                        <input type="number" id="productMinStock" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <input type="number" id="productMinStock" step="0.01"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Stock Máximo</label>
-                        <input type="number" id="productMaxStock" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <input type="number" id="productMaxStock" step="0.01"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     </div>
 
-                    <!-- Prices -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Precio de Costo *</label>
-                        <input type="number" id="productCostPrice" step="0.01" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <input type="number" id="productCostPrice" step="0.01" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Precio de Venta</label>
-                        <input type="number" id="productSellingPrice" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <!-- Variant Fields (Optional) -->
+                    <div class="md:col-span-2 mt-4 pt-4 border-t border-gray-200">
+                        <h4 style="margin-bottom: 1rem; color: #64748b; font-size: 0.875rem; font-weight: 600;">DETALLES
+                            VARIANTES (Opcional)</h4>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Marca</label>
+                                <input type="text" id="productBrand" placeholder="Ej: Carbonell, President"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Tipo/Variante</label>
+                                <input type="text" id="productVariantType" placeholder="Ej: Joven, Sin sal"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Tamaño</label>
+                                <input type="text" id="productSize" placeholder="Ej: 1L, 250g, 750ml"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Presentación</label>
+                                <input type="text" id="productPresentation" placeholder="Ej: Caja 12 unidades"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Origen</label>
+                                <input type="text" id="productOrigin" placeholder="Ej: Rioja, Francia"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Notas</label>
+                                <input type="text" id="productNotes" placeholder="Notas adicionales"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Form Actions -->
                 <div class="flex items-center justify-end space-x-4 mt-8">
-                    <button type="button" id="cancelBtn" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                    <button type="button" id="cancelBtn"
+                        class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
                         Cancelar
                     </button>
-                    <button type="submit" id="saveBtn" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    <button type="submit" id="saveBtn"
+                        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
                         <i class="fas fa-save mr-2"></i>Guardar
                     </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Provider Modal -->
+    <div id="providerModal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full mx-4">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-semibold text-gray-800">Nuevo Proveedor</h3>
+                    <button id="closeProviderModal" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <form id="providerForm" class="p-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre Empresa *</label>
+                        <input type="text" id="provName" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Persona de Contacto *</label>
+                        <input type="text" id="provContact" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono *</label>
+                            <input type="text" id="provPhone" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                            <input type="email" id="provEmail" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+                        <input type="text" id="provAddress"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">RUC / Tax ID</label>
+                        <input type="text" id="provTaxId"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end space-x-4 mt-6">
+                    <button type="button" id="cancelProviderBtn"
+                        class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">Cancelar</button>
+                    <button type="submit"
+                        class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Guardar
+                        Proveedor</button>
                 </div>
             </form>
         </div>
@@ -328,7 +464,7 @@
     <script src="js/utils.js"></script>
     <script>
         // Initialize inventory page
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             if (!authManager.isAuthenticated()) {
                 window.location.href = '/';
                 return;
@@ -343,7 +479,6 @@
 
             // Initialize inventory manager
             window.inventoryManager = new InventoryManager();
-            inventoryManager.init();
         });
 
         function navigateTo(page) {
@@ -355,17 +490,18 @@
                 'reports': 'reports.html',
                 'waste': 'waste.html'
             };
-            
+
             if (pages[page]) {
                 window.location.href = pages[page];
             }
         }
 
         // Logout
-        document.getElementById('logoutBtn').addEventListener('click', function() {
+        document.getElementById('logoutBtn').addEventListener('click', function () {
             authManager.logout();
             window.location.href = '/';
         });
     </script>
 </body>
+
 </html>

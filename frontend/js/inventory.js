@@ -13,6 +13,7 @@ class InventoryManager {
         this.itemsPerPage = 12;
         this.currentView = 'grid';
         this.currentEditingId = null;
+        this.isSubmitting = false;
         this.init();
     }
 
@@ -23,7 +24,7 @@ class InventoryManager {
 
     setupEventListeners() {
         // Search and filters
-        document.getElementById('searchInput').addEventListener('input', 
+        document.getElementById('searchInput').addEventListener('input',
             Utils.debounce(() => this.applyFilters(), 300));
         document.getElementById('categoryFilter').addEventListener('change', () => this.applyFilters());
         document.getElementById('stockFilter').addEventListener('change', () => this.applyFilters());
@@ -42,6 +43,12 @@ class InventoryManager {
         document.getElementById('closeModal').addEventListener('click', () => this.closeModal());
         document.getElementById('cancelBtn').addEventListener('click', () => this.closeModal());
         document.getElementById('productForm').addEventListener('submit', (e) => this.handleSubmit(e));
+
+        // Provider Modal
+        document.getElementById('addProviderBtn').addEventListener('click', () => this.openProviderModal());
+        document.getElementById('closeProviderModal').addEventListener('click', () => this.closeProviderModal());
+        document.getElementById('cancelProviderBtn').addEventListener('click', () => this.closeProviderModal());
+        document.getElementById('providerForm').addEventListener('submit', (e) => this.handleProviderSubmit(e));
 
         // Export
         document.getElementById('exportBtn').addEventListener('click', () => this.exportProducts());
@@ -66,7 +73,7 @@ class InventoryManager {
 
             this.populateSelects();
             this.applyFilters();
-            
+
         } catch (error) {
             console.error('Error loading initial data:', error);
             Utils.showNotification('Error al cargar datos iniciales', 'error');
@@ -129,10 +136,10 @@ class InventoryManager {
         // Category select
         const categorySelect = document.getElementById('productCategory');
         const categoryFilter = document.getElementById('categoryFilter');
-        
+
         categorySelect.innerHTML = '<option value="">Seleccionar categoría</option>';
         categoryFilter.innerHTML = '<option value="">Todas las categorías</option>';
-        
+
         this.categories.forEach(category => {
             const option1 = document.createElement('option');
             option1.value = category.id;
@@ -148,7 +155,7 @@ class InventoryManager {
         // Provider select
         const providerSelect = document.getElementById('productProvider');
         providerSelect.innerHTML = '<option value="">Seleccionar proveedor</option>';
-        
+
         this.providers.forEach(provider => {
             const option = document.createElement('option');
             option.value = provider.id;
@@ -205,7 +212,7 @@ class InventoryManager {
 
         this.filteredProducts = this.products.filter(product => {
             // Search filter
-            if (search && !product.name.toLowerCase().includes(search) && 
+            if (search && !product.name.toLowerCase().includes(search) &&
                 !product.description?.toLowerCase().includes(search) &&
                 !product.barcode?.toLowerCase().includes(search)) {
                 return false;
@@ -244,13 +251,13 @@ class InventoryManager {
 
     setView(view) {
         this.currentView = view;
-        
+
         // Update buttons
-        document.getElementById('gridView').className = view === 'grid' ? 
+        document.getElementById('gridView').className = view === 'grid' ?
             'px-3 py-2 bg-blue-600 text-white rounded-l-lg' :
             'px-3 py-2 text-gray-600 rounded-l-lg hover:bg-gray-50';
-        
-        document.getElementById('listView').className = view === 'list' ? 
+
+        document.getElementById('listView').className = view === 'list' ?
             'px-3 py-2 bg-blue-600 text-white rounded-r-lg' :
             'px-3 py-2 text-gray-600 rounded-r-lg hover:bg-gray-50';
 
@@ -282,7 +289,7 @@ class InventoryManager {
             const stockStatus = this.getStockStatus(product);
             const card = document.createElement('div');
             card.className = `product-card bg-white rounded-xl shadow-sm p-6 border-l-4 ${stockStatus.class}`;
-            
+
             card.innerHTML = `
                 <div class="flex items-start justify-between mb-4">
                     <div class="flex-1">
@@ -358,12 +365,12 @@ class InventoryManager {
         `;
 
         const tbody = table.querySelector('#listTableBody');
-        
+
         products.forEach(product => {
             const stockStatus = this.getStockStatus(product);
             const row = document.createElement('tr');
             row.className = 'border-b border-gray-100 hover:bg-gray-50';
-            
+
             row.innerHTML = `
                 <td class="py-3 px-4">
                     <div class="font-medium text-gray-900">${product.name}</div>
@@ -489,6 +496,7 @@ class InventoryManager {
     }
 
     openModal(product = null) {
+        this.isSubmitting = false; // RESET flag
         const modal = document.getElementById('productModal');
         const title = document.getElementById('modalTitle');
         const form = document.getElementById('productForm');
@@ -525,10 +533,28 @@ class InventoryManager {
         document.getElementById('productMaxStock').value = product.max_stock || 0;
         document.getElementById('productCostPrice').value = product.cost_price || 0;
         document.getElementById('productSellingPrice').value = product.selling_price || 0;
+
+        // Populate variant fields
+        document.getElementById('productBrand').value = product.brand || '';
+        document.getElementById('productVariantType').value = product.variant_type || '';
+        document.getElementById('productSize').value = product.size || '';
+        document.getElementById('productPresentation').value = product.presentation || '';
+        document.getElementById('productOrigin').value = product.origin || '';
+        document.getElementById('productNotes').value = product.notes || '';
     }
 
     async handleSubmit(e) {
         e.preventDefault();
+
+        if (this.isSubmitting) return;
+        this.isSubmitting = true;
+
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            this.originalSubmitText = submitBtn.textContent;
+            submitBtn.textContent = 'Guardando...';
+        }
 
         const formData = {
             name: document.getElementById('productName').value,
@@ -541,12 +567,24 @@ class InventoryManager {
             min_stock: parseFloat(document.getElementById('productMinStock').value) || 0,
             max_stock: parseFloat(document.getElementById('productMaxStock').value) || 100,
             cost_price: parseFloat(document.getElementById('productCostPrice').value),
-            selling_price: parseFloat(document.getElementById('productSellingPrice').value) || 0
+            selling_price: 0,
+            // Variant fields
+            brand: document.getElementById('productBrand')?.value || null,
+            variant_type: document.getElementById('productVariantType')?.value || null,
+            size: document.getElementById('productSize')?.value || null,
+            presentation: document.getElementById('productPresentation')?.value || null,
+            origin: document.getElementById('productOrigin')?.value || null,
+            notes: document.getElementById('productNotes')?.value || null
         };
 
         // Validation
         const validation = this.validateProduct(formData);
         if (!validation.isValid) {
+            this.isSubmitting = false;
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = this.originalSubmitText;
+            }
             Utils.showNotification(validation.errors[0], 'error');
             return;
         }
@@ -557,7 +595,7 @@ class InventoryManager {
             let response;
             if (this.currentEditingId) {
                 // Update existing product
-                response = await authManager.authenticatedFetch(`/api/products/${this.currentEditingId}`, {
+                response = await authManager.authenticatedFetch(`/api/products/${this.currentEditingId}/`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
@@ -566,7 +604,7 @@ class InventoryManager {
                 });
             } else {
                 // Create new product
-                response = await authManager.authenticatedFetch('/api/products', {
+                response = await authManager.authenticatedFetch('/api/products/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -576,23 +614,33 @@ class InventoryManager {
             }
 
             hideLoading();
+            this.isSubmitting = false;
 
             if (response.ok) {
                 Utils.showNotification(
                     this.currentEditingId ? 'Producto actualizado exitosamente' : 'Producto creado exitosamente',
                     'success'
                 );
-                
+
                 this.closeModal();
                 await this.loadProducts();
                 this.applyFilters();
                 await this.loadStats();
             } else {
                 const error = await response.json();
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = this.originalSubmitText;
+                }
                 Utils.showNotification(error.detail || 'Error al guardar producto', 'error');
             }
         } catch (error) {
             console.error('Error saving product:', error);
+            this.isSubmitting = false;
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = this.originalSubmitText;
+            }
             Utils.showNotification('Error de conexión', 'error');
         }
     }
@@ -658,7 +706,7 @@ class InventoryManager {
 
         try {
             const hideLoading = Utils.showLoading('Eliminando producto...');
-            
+
             const response = await authManager.authenticatedFetch(`/api/products/${productId}`, {
                 method: 'DELETE'
             });
@@ -683,7 +731,7 @@ class InventoryManager {
     async exportProducts() {
         try {
             const hideLoading = Utils.showLoading('Exportando productos...');
-            
+
             const response = await authManager.authenticatedFetch('/api/products?limit=1000');
             const products = await response.json();
 
@@ -716,6 +764,78 @@ class InventoryManager {
         }
     }
 
+    openProviderModal() {
+        document.getElementById('providerModal').classList.add('active');
+        document.getElementById('providerForm').reset();
+    }
+
+    closeProviderModal() {
+        document.getElementById('providerModal').classList.remove('active');
+        document.getElementById('providerForm').reset();
+    }
+
+    async handleProviderSubmit(e) {
+        e.preventDefault();
+
+        if (this.isSubmitting) return;
+        this.isSubmitting = true;
+
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Guardando...';
+        }
+
+        const formData = {
+            name: document.getElementById('provName').value,
+            contact_person: document.getElementById('provContact').value,
+            phone: document.getElementById('provPhone').value,
+            email: document.getElementById('provEmail').value,
+            address: document.getElementById('provAddress').value || null,
+            tax_id: document.getElementById('provTaxId').value || null
+        };
+
+        try {
+            const hideLoading = Utils.showLoading('Guardando proveedor...');
+
+            const response = await authManager.authenticatedFetch('/api/products/providers', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+
+            hideLoading();
+            this.isSubmitting = false;
+
+            if (response.ok) {
+                Utils.showNotification('Proveedor creado exitosamente', 'success');
+                this.closeProviderModal();
+
+                // Refresh providers list
+                await this.loadProviders();
+                this.populateSelects();
+
+            } else {
+                const error = await response.json();
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Guardar';
+                }
+                Utils.showNotification(error.detail || 'Error al crear proveedor', 'error');
+            }
+        } catch (error) {
+            console.error('Error creating provider:', error);
+            this.isSubmitting = false;
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Guardar';
+            }
+            Utils.showNotification('Error de conexión', 'error');
+        }
+    }
+
     showConfirmDialog(title, message) {
         return new Promise((resolve) => {
             const confirmed = confirm(`${title}\n\n${message}`);
@@ -725,7 +845,7 @@ class InventoryManager {
 }
 
 // Initialize inventory manager when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     if (typeof authManager !== 'undefined' && authManager.isAuthenticated()) {
         window.inventoryManager = new InventoryManager();
     }

@@ -16,7 +16,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from backend.models.database import (
     Product, StockMovement, Invoice, InvoiceItem, WasteLog, 
-    PhysicalCount, User, Category, Provider
+    PhysicalCount, User, Category, Provider, get_db
 )
 from backend.api.auth import get_current_user, SessionLocal
 from backend.utils.calculations import ReportCalculator
@@ -25,14 +25,6 @@ from fastapi.responses import StreamingResponse
 
 # Router
 router = APIRouter()
-
-# Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @router.get("/inventory-valuation")
 async def get_inventory_valuation_report(

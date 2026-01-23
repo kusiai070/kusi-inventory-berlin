@@ -25,9 +25,11 @@ class Settings:
     )
     
     # CORS
+    PORT: str = os.getenv("PORT", "8000")
+    FRONTEND_PORT: str = os.getenv("FRONTEND_PORT", "3000")
     ALLOWED_ORIGINS: List[str] = os.getenv(
         "ALLOWED_ORIGINS",
-        "http://localhost:8000,http://localhost:3000"
+        f"http://localhost:{PORT},http://localhost:{FRONTEND_PORT},https://restaurant-inventory-enterprise.onrender.com"
     ).split(",")
     
     # OCR Settings
