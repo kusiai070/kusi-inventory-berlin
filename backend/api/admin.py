@@ -10,19 +10,11 @@ import os
 # Add root to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from backend.models.database import Restaurant, User
+from backend.models.database import Restaurant, User, get_db
 from backend.api.auth import get_current_user, SessionLocal
 
 # Router
 router = APIRouter()
-
-# Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 # Schemas
 class RestaurantCreate(BaseModel):

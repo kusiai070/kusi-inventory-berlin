@@ -163,10 +163,12 @@ async def test_auth(current_user = Depends(get_current_user)):
 
 if __name__ == "__main__":
     import uvicorn
+    import os
     
     print("Enterprise Restaurant Inventory System")
     print("Starting server...")
-    print("API available at: http://localhost:8000")
-    print("Documentation: http://localhost:8000/docs")
+    port = int(os.environ.get("PORT", 8000))
+    print(f"API available at: http://localhost:{port}")
+    print(f"Documentation: http://localhost:{port}/docs")
     
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=False)
+    uvicorn.run(app, host="0.0.0.0", port=port, reload=False)

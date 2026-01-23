@@ -16,7 +16,7 @@ import sys
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from backend.models.database import User, Restaurant, SessionLocal
+from backend.models.database import User, Restaurant, SessionLocal, get_db
 from backend.config import settings
 import bcrypt
 
@@ -25,13 +25,6 @@ security = HTTPBearer()
 SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = settings.ALGORITHM
 ACCESS_TOKEN_EXPIRE_HOURS = settings.ACCESS_TOKEN_EXPIRE_HOURS
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 # Pydantic models
 class LoginRequest(BaseModel):

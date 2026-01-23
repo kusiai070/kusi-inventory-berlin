@@ -15,7 +15,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from backend.models.database import (
-    Product, Category, Provider, Restaurant, StockMovement, User
+    Product, Category, Provider, Restaurant, StockMovement, User, get_db
 )
 from backend.models.enums import StockMovementType
 from backend.api.auth import get_current_user, SessionLocal
@@ -50,6 +50,14 @@ class ProductUpdate(BaseModel):
     category_id: Optional[int] = None
     provider_id: Optional[int] = None
 
+class ProviderCreate(BaseModel):
+    name: str
+    contact_person: str
+    phone: str
+    email: str
+    address: Optional[str] = None
+    tax_id: Optional[str] = None
+
 class ProductResponse(BaseModel):
     id: int
     name: str
@@ -70,13 +78,37 @@ class ProductResponse(BaseModel):
     created_at: str
     updated_at: Optional[str]
 
-# Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+@router.post("/providers", response_model=dict)
+async def create_provider(
+    provider: ProviderCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Create a new provider"""
+    # Check if provider email already exists
+    existing = db.query(Provider).filter(Provider.email == provider.email).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Provider with this email already exists")
+    
+    # Create provider
+    db_provider = Provider(
+        name=provider.name,
+        contact_person=provider.contact_person,
+        phone=provider.phone,
+        email=provider.email,
+        address=provider.address,
+        tax_id=provider.tax_id,
+        is_active=True
+    )
+    db.add(db_provider)
+    db.commit()
+    db.refresh(db_provider)
+    
+    return {
+        "id": db_provider.id,
+        "name": db_provider.name,
+        "message": "Provider created successfully"
+    }
 
 @router.post("/", response_model=ProductResponse)
 async def create_product(
