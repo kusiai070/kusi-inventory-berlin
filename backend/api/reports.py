@@ -28,7 +28,7 @@ router = APIRouter()
 
 @router.get("/inventory-valuation")
 async def get_inventory_valuation_report(
-    format: str = Query("json", regex="^(json|excel|pdf)$"),
+    format: str = Query("json", pattern="^(json|excel|pdf)$"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -111,8 +111,8 @@ async def get_inventory_valuation_report(
 async def get_consumption_report(
     date_from: str = Query(..., description="Start date (YYYY-MM-DD)"),
     date_to: str = Query(..., description="End date (YYYY-MM-DD)"),
-    group_by: str = Query("category", regex="^(category|product)$"),
-    format: str = Query("json", regex="^(json|excel|pdf)$"),
+    group_by: str = Query("category", pattern="^(category|product)$"),
+    format: str = Query("json", pattern="^(json|excel|pdf)$"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -244,7 +244,7 @@ async def get_consumption_report(
 async def get_waste_analysis_report(
     date_from: str = Query(..., description="Start date (YYYY-MM-DD)"),
     date_to: str = Query(..., description="End date (YYYY-MM-DD)"),
-    format: str = Query("json", regex="^(json|excel|pdf)$"),
+    format: str = Query("json", pattern="^(json|excel|pdf)$"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -388,7 +388,7 @@ async def get_waste_analysis_report(
 async def get_theoretical_vs_actual_report(
     date_from: str = Query(..., description="Start date (YYYY-MM-DD)"),
     date_to: str = Query(..., description="End date (YYYY-MM-DD)"),
-    format: str = Query("json", regex="^(json|excel|pdf)$"),
+    format: str = Query("json", pattern="^(json|excel|pdf)$"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -478,7 +478,7 @@ async def get_purchases_report(
     date_from: str = Query(..., description="Start date (YYYY-MM-DD)"),
     date_to: str = Query(..., description="End date (YYYY-MM-DD)"),
     provider_id: Optional[int] = None,
-    format: str = Query("json", regex="^(json|excel|pdf)$"),
+    format: str = Query("json", pattern="^(json|excel|pdf)$"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -576,7 +576,7 @@ async def get_purchases_report(
 @router.get("/rotation-analysis")
 async def get_rotation_analysis_report(
     days: int = Query(30, ge=1, le=365),
-    format: str = Query("json", regex="^(json|excel|pdf)$"),
+    format: str = Query("json", pattern="^(json|excel|pdf)$"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -662,7 +662,7 @@ async def get_rotation_analysis_report(
 @router.get("/obsolete-products")
 async def get_obsolete_products_report(
     days_without_movement: int = Query(30, ge=1, le=365),
-    format: str = Query("json", regex="^(json|excel|pdf)$"),
+    format: str = Query("json", pattern="^(json|excel|pdf)$"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
