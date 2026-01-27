@@ -23,42 +23,85 @@ class InventoryManager {
     }
 
     setupEventListeners() {
+        console.log('Iniciando configuración de eventos...');
+
+        // Helper para agregar eventos de forma segura
+        const addEvent = (id, event, handler) => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener(event, handler);
+                console.log(`Evento '${event}' agregado a '${id}'`);
+            } else {
+                console.warn(`Elemento '${id}' no encontrado para evento '${event}'`);
+            }
+        };
+
         // Search and filters
-        document.getElementById('searchInput').addEventListener('input',
-            Utils.debounce(() => this.applyFilters(), 300));
-        document.getElementById('categoryFilter').addEventListener('change', () => this.applyFilters());
-        document.getElementById('stockFilter').addEventListener('change', () => this.applyFilters());
-        document.getElementById('clearFilters').addEventListener('click', () => this.clearFilters());
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', Utils.debounce(() => this.applyFilters(), 300));
+        }
+
+        addEvent('categoryFilter', 'change', () => this.applyFilters());
+        addEvent('stockFilter', 'change', () => this.applyFilters());
+        addEvent('clearFilters', 'click', () => this.clearFilters());
 
         // View toggles
-        document.getElementById('gridView').addEventListener('click', () => this.setView('grid'));
-        document.getElementById('listView').addEventListener('click', () => this.setView('list'));
+        addEvent('gridView', 'click', () => this.setView('grid'));
+        addEvent('listView', 'click', () => this.setView('list'));
 
         // Pagination
-        document.getElementById('prevPage').addEventListener('click', () => this.previousPage());
-        document.getElementById('nextPage').addEventListener('click', () => this.nextPage());
+        addEvent('prevPage', 'click', () => this.previousPage());
+        addEvent('nextPage', 'click', () => this.nextPage());
 
-        // Modal
-        document.getElementById('addProductBtn').addEventListener('click', () => this.openModal());
-        document.getElementById('closeModal').addEventListener('click', () => this.closeModal());
-        document.getElementById('cancelBtn').addEventListener('click', () => this.closeModal());
-        document.getElementById('productForm').addEventListener('submit', (e) => this.handleSubmit(e));
+        // Product Modal
+        addEvent('addProductBtn', 'click', () => this.openModal());
+        addEvent('closeModal', 'click', () => this.closeModal());
+        addEvent('cancelBtn', 'click', () => this.closeModal());
+        addEvent('productForm', 'submit', (e) => this.handleSubmit(e));
 
-        // Provider Modal
-        document.getElementById('addProviderBtn').addEventListener('click', () => this.openProviderModal());
-        document.getElementById('closeProviderModal').addEventListener('click', () => this.closeProviderModal());
-        document.getElementById('cancelProviderBtn').addEventListener('click', () => this.closeProviderModal());
-        document.getElementById('providerForm').addEventListener('submit', (e) => this.handleProviderSubmit(e));
+        // Provider Modal - EL FIX CRÍTICO
+        addEvent('addProviderBtn', 'click', () => {
+            console.log('Click en botón Nuevo Proveedor');
+            this.openProviderModal();
+        });
+        addEvent('closeProviderModal', 'click', () => this.closeProviderModal());
+        addEvent('cancelProviderBtn', 'click', () => this.closeProviderModal());
+        addEvent('providerForm', 'submit', (e) => this.handleProviderSubmit(e));
 
         // Export
-        document.getElementById('exportBtn').addEventListener('click', () => this.exportProducts());
+        addEvent('exportBtn', 'click', () => this.exportProducts());
 
-        // Close modal on outside click
-        document.getElementById('productModal').addEventListener('click', (e) => {
-            if (e.target.id === 'productModal') {
-                this.closeModal();
-            }
+        // Modal outside clicks
+        addEvent('productModal', 'click', (e) => {
+            if (e.target.id === 'productModal') this.closeModal();
         });
+
+        // DELEGACIÓN DE EVENTOS PARA BOTONES DINÁMICOS (Editar/Eliminar)
+        // Esto reemplaza los onclick="inventoryManager.editProduct(...)"
+        const productsContainer = document.getElementById('productsContainer');
+        if (productsContainer) {
+            productsContainer.addEventListener('click', (e) => {
+                // Editar
+                const editBtn = e.target.closest('.edit-product-btn');
+                if (editBtn) {
+                    const id = parseInt(editBtn.dataset.id);
+                    console.log('Click en Editar, ID:', id);
+                    this.editProduct(id);
+                    return;
+                }
+
+                // Eliminar
+                const deleteBtn = e.target.closest('.delete-product-btn');
+                if (deleteBtn) {
+                    const id = parseInt(deleteBtn.dataset.id);
+                    console.log('Click en Eliminar, ID:', id);
+                    this.deleteProduct(id);
+                    return;
+                }
+            });
+            console.log('Delegación de eventos configurada en productsContainer');
+        }
     }
 
     async loadInitialData() {
@@ -297,10 +340,10 @@ class InventoryManager {
                         <p class="text-sm text-gray-600">${product.category_name || 'Sin categoría'}</p>
                     </div>
                     <div class="flex space-x-2">
-                        <button onclick="inventoryManager.editProduct(${product.id})" class="text-blue-600 hover:text-blue-800">
+                        <button class="edit-product-btn text-blue-600 hover:text-blue-800" data-id="${product.id}">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button onclick="inventoryManager.deleteProduct(${product.id})" class="text-red-600 hover:text-red-800">
+                        <button class="delete-product-btn text-red-600 hover:text-red-800" data-id="${product.id}">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -392,10 +435,10 @@ class InventoryManager {
                 </td>
                 <td class="py-3 px-4">
                     <div class="flex space-x-2">
-                        <button onclick="inventoryManager.editProduct(${product.id})" class="text-blue-600 hover:text-blue-800">
+                        <button class="edit-product-btn text-blue-600 hover:text-blue-800" data-id="${product.id}">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button onclick="inventoryManager.deleteProduct(${product.id})" class="text-red-600 hover:text-red-800">
+                        <button class="delete-product-btn text-red-600 hover:text-red-800" data-id="${product.id}">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
