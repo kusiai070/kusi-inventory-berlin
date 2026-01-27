@@ -807,7 +807,10 @@ class InventoryManager {
     }
 
     openProviderModal() {
-        document.getElementById('providerModal').classList.add('active');
+        const modal = document.getElementById('providerModal');
+        // Force browser reflow/repaint
+        void modal.offsetHeight;
+        modal.classList.add('active');
         document.getElementById('providerForm').reset();
     }
 
