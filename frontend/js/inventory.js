@@ -575,7 +575,6 @@ class InventoryManager {
         document.getElementById('productMinStock').value = product.min_stock || 0;
         document.getElementById('productMaxStock').value = product.max_stock || 0;
         document.getElementById('productCostPrice').value = product.cost_price || 0;
-        document.getElementById('productSellingPrice').value = product.selling_price || 0;
 
         // Populate variant fields
         document.getElementById('productBrand').value = product.brand || '';
