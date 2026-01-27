@@ -74,13 +74,7 @@ class ProviderCreate(BaseModel):
     address: Optional[str] = None
     tax_id: Optional[str] = None
 
-class ProviderCreate(BaseModel):
-    name: str
-    contact_person: str
-    phone: str
-    email: str
-    address: Optional[str] = None
-    tax_id: Optional[str] = None
+
 
 class ProductResponse(BaseModel):
     id: int

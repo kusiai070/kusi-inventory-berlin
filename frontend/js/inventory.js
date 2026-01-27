@@ -887,8 +887,9 @@ class InventoryManager {
 }
 
 // Initialize inventory manager when DOM is loaded
-document.addEventListener('DOMContentLoaded', function () {
-    if (typeof authManager !== 'undefined' && authManager.isAuthenticated()) {
-        window.inventoryManager = new InventoryManager();
-    }
-});
+// Initialize inventory manager when DOM is loaded
+// document.addEventListener('DOMContentLoaded', function () {
+//     if (typeof authManager !== 'undefined' && authManager.isAuthenticated()) {
+//         window.inventoryManager = new InventoryManager();
+//     }
+// });
