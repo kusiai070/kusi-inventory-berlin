@@ -808,9 +808,23 @@ class InventoryManager {
 
     openProviderModal() {
         const modal = document.getElementById('providerModal');
+        console.log('--- DEBUG MODAL PROVEEDOR ---');
+        console.log('Elemento encontrado:', !!modal);
+        console.log('Clases iniciales:', modal.className);
+
         // Force browser reflow/repaint
         void modal.offsetHeight;
         modal.classList.add('active');
+
+        // Check computed styles immediately after adding class
+        const style = window.getComputedStyle(modal);
+        console.log('Clases finales:', modal.className);
+        console.log('Display computado:', style.display);
+        console.log('Z-Index computado:', style.zIndex);
+        console.log('Visibility computado:', style.visibility);
+        console.log('Opacity computado:', style.opacity);
+        console.log('-----------------------------');
+
         document.getElementById('providerForm').reset();
     }
 
@@ -868,7 +882,9 @@ class InventoryManager {
                     submitBtn.disabled = false;
                     submitBtn.textContent = 'Guardar';
                 }
-                Utils.showNotification(error.detail || 'Error al crear proveedor', 'error');
+                const message = error.detail || 'Error al crear proveedor';
+                Utils.showNotification(message, 'error');
+                console.error('Error backend:', error);
             }
         } catch (error) {
             console.error('Error creating provider:', error);

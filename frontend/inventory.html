@@ -383,24 +383,72 @@
                             </div>
                         </div>
 
-                        <!-- Form Actions -->
-                        <div class="flex items-center justify-end space-x-4 mt-8">
-                            <button type="button" id="cancelBtn"
-                                class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
-                                Cancelar
-                            </button>
-                            <button type="submit" id="saveBtn"
-                                class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                                <i class="fas fa-save mr-2"></i>Guardar
-                            </button>
-                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="flex items-center justify-end space-x-4 mt-8">
+                        <button type="button" id="cancelBtn"
+                            class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                            Cancelar
+                        </button>
+                        <button type="submit" id="saveBtn"
+                            class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            <i class="fas fa-save mr-2"></i>Guardar
+                        </button>
+                    </div>
             </form>
         </div>
     </div>
+    </div>
 
+
+
+    <script src="js/auth.js?v=20260127_fix4"></script>
+    <script src="js/inventory.js?v=20260127_fix4"></script>
+    <script src="js/utils.js?v=20260127_fix4"></script>
+    <script>
+        // Initialize inventory page
+        document.addEventListener('DOMContentLoaded', function () {
+            if (!authManager.isAuthenticated()) {
+                window.location.href = '/';
+                return;
+            }
+
+            // Load user info
+            const user = authManager.getUser();
+            if (user) {
+                document.getElementById('userName').textContent = user.full_name;
+                document.getElementById('userRole').textContent = user.role;
+            }
+
+            // Initialize inventory manager
+            window.inventoryManager = new InventoryManager();
+        });
+
+        function navigateTo(page) {
+            const pages = {
+                'dashboard': 'dashboard.html',
+                'inventory': 'inventory.html',
+                'ocr': 'ocr.html',
+                'count': 'count.html',
+                'reports': 'reports.html',
+                'waste': 'waste.html'
+            };
+
+            if (pages[page]) {
+                window.location.href = pages[page];
+            }
+        }
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', function () {
+            authManager.logout();
+            window.location.href = '/';
+        });
+    </script>
     <!-- Add Provider Modal -->
-    <div id="providerModal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-[60]"
-        style="z-index: 60;">
+    <div id="providerModal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-[100]"
+        style="z-index: 100 !important;">
         <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full mx-4">
             <div class="p-6 border-b border-gray-200">
                 <div class="flex items-center justify-between">
@@ -457,50 +505,6 @@
             </form>
         </div>
     </div>
-
-    <script src="js/auth.js?v=20260127_fix4"></script>
-    <script src="js/inventory.js?v=20260127_fix4"></script>
-    <script src="js/utils.js?v=20260127_fix4"></script>
-    <script>
-        // Initialize inventory page
-        document.addEventListener('DOMContentLoaded', function () {
-            if (!authManager.isAuthenticated()) {
-                window.location.href = '/';
-                return;
-            }
-
-            // Load user info
-            const user = authManager.getUser();
-            if (user) {
-                document.getElementById('userName').textContent = user.full_name;
-                document.getElementById('userRole').textContent = user.role;
-            }
-
-            // Initialize inventory manager
-            window.inventoryManager = new InventoryManager();
-        });
-
-        function navigateTo(page) {
-            const pages = {
-                'dashboard': 'dashboard.html',
-                'inventory': 'inventory.html',
-                'ocr': 'ocr.html',
-                'count': 'count.html',
-                'reports': 'reports.html',
-                'waste': 'waste.html'
-            };
-
-            if (pages[page]) {
-                window.location.href = pages[page];
-            }
-        }
-
-        // Logout
-        document.getElementById('logoutBtn').addEventListener('click', function () {
-            authManager.logout();
-            window.location.href = '/';
-        });
-    </script>
 </body>
 
 </html>

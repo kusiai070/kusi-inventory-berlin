@@ -33,10 +33,10 @@ class AuthManager {
                 // Store authentication data
                 this.token = data.access_token;
                 this.user = data.user;
-                
+
                 localStorage.setItem('access_token', data.access_token);
                 localStorage.setItem('user', JSON.stringify(data.user));
-                
+
                 return {
                     success: true,
                     user: data.user
@@ -289,14 +289,14 @@ class OfflineSyncManager {
         for (const action of this.pendingActions) {
             try {
                 const response = await this.authManager.authenticatedFetch(action.url, action.options);
-                
+
                 if (response.ok) {
                     syncedActions.push(action.id);
                     console.log('Synced action:', action.id);
                 } else {
                     // Increment attempt counter
                     action.attempts = (action.attempts || 0) + 1;
-                    
+
                     // Remove if too many failed attempts
                     if (action.attempts >= 3) {
                         syncedActions.push(action.id);
